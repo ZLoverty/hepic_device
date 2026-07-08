@@ -1,0 +1,89 @@
+name: Build frontend
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to build (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-frontend-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: tag
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # backend/__init__.py's __version__ is the single source of truth
+      # (see pyproject.toml's [tool.setuptools.dynamic]). Fail fast if
+      # someone tags a release without bumping it.
+      - name: Verify version matches tag
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          version="${tag#v}"
+          pkg_version=$(python3 -c "from backend import __version__; print(__version__)")
+          if [ "$version" != "$pkg_version" ]; then
+            echo "::error::Tag $tag (version $version) does not match backend.__version__ ($pkg_version)"
+            exit 1
+          fi
+          echo "Version check OK: $version"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      # vite.config.js outDir points build output at backend/static,
+      # which is where backend/main.py mounts and serves it from.
+      - name: Verify build output
+        run: |
+          if [ ! -f backend/static/index.html ]; then
+            echo "::error::backend/static/index.html not found after build"
+            exit 1
+          fi
+
+      - name: Package build artifact
+        id: package
+        run: |
+          asset="hepic-device-static-${{ steps.tag.outputs.tag }}.tar.gz"
+          tar -czf "$asset" -C backend static
+          echo "asset=$asset" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "hepic-device ${{ steps.tag.outputs.tag }}"
+          files: ${{ steps.package.outputs.asset }}
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.tag, '-') }}

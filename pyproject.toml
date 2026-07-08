@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hepic-device"
+dynamic = ["version"]
+description = "Embedded web backend for the HEPiC standalone device."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "pyyaml",
+    "numpy",
+    "HEPiC @ git+https://github.com/ZLoverty/HEPiC.git@master",
+]
+
+[project.scripts]
+hepic-device = "backend.main:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "backend.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+namespaces = false

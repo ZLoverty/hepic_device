@@ -1,0 +1,20 @@
+[Unit]
+Description=HEPiC Device kiosk display (X11 + Chromium)
+After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service hepic-device-backend.service
+Requires=hepic-device-backend.service
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=etpi
+Group=etpi
+PAMName=login
+TTYPath=/dev/tty1
+WorkingDirectory=/home/etpi
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/startx /home/etpi/hepic_device/deploy/kiosk.xinitrc -- :0 vt1 -nolisten tcp
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
