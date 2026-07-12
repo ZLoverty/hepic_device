@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -5,6 +6,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+from HEPiC.database import sync_materials
 
 from . import __version__
 from .config import load_config
@@ -14,6 +17,9 @@ from .routers import klipper, materials, quality_check, sensors, system
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Best-effort: never blocks/breaks startup if the network is down.
+    await asyncio.to_thread(sync_materials)
+
     config = load_config()
     state = AppState(config)
     app.state.app_state = state

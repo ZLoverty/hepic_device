@@ -14,6 +14,11 @@ def list_families():
     return {"families": _db().get_family_names()}
 
 
+@router.get("/version")
+def get_version():
+    return {"version": _db().get_version()}
+
+
 @router.get("/{family}")
 def list_materials(family: str):
     db = _db()

@@ -2,6 +2,8 @@ import socket
 
 from fastapi import APIRouter
 
+from HEPiC.database.material_database import get_material_database
+
 router = APIRouter()
 
 
@@ -22,4 +24,5 @@ def get_info():
     return {
         "hostname": socket.gethostname(),
         "ip_address": _local_ip(),
+        "material_db_version": get_material_database().get_version(),
     }
