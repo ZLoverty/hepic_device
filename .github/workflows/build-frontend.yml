@@ -48,6 +48,33 @@ jobs:
           fi
           echo "Version check OK: $version"
 
+      - name: Extract release notes
+        id: notes
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import os
+          import re
+
+          tag = os.environ["TAG"]
+          version = tag.lstrip("v")
+          major, minor, _ = version.split(".", 2)
+          note_file = f"release_notes/v{major}.{minor}.x.md"
+
+          if os.path.exists(note_file):
+              content = open(note_file, encoding="utf-8").read()
+              pattern = rf"(?s)## v{re.escape(version)}\s*\n(.*?)(?=\n## v|\Z)"
+              match = re.search(pattern, content)
+              notes = match.group(1).strip() if match else f"_No release notes found for v{version}._"
+          else:
+              notes = f"_No release notes file found ({note_file})._"
+
+          print("notes<<NOTES_EOF")
+          print(notes)
+          print("NOTES_EOF")
+          PY
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -84,6 +111,11 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: "hepic-device ${{ steps.tag.outputs.tag }}"
+          body: |
+            ## hepic-device ${{ steps.tag.outputs.tag }}
+
+            ### What's New
+            ${{ steps.notes.outputs.notes }}
           files: ${{ steps.package.outputs.asset }}
           draft: false
           prerelease: ${{ contains(steps.tag.outputs.tag, '-') }}
