@@ -10,9 +10,13 @@ User=etpi
 Group=etpi
 PAMName=login
 TTYPath=/dev/tty1
+StandardInput=tty
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
 WorkingDirectory=/home/etpi
 Environment=DISPLAY=:0
-ExecStart=/usr/bin/startx /home/etpi/hepic_device/deploy/kiosk.xinitrc -- :0 vt1 -nolisten tcp
+ExecStart=/usr/bin/startx /home/etpi/hepic_device/deploy/kiosk.xinitrc -- :0 vt1 -keeptty -nolisten tcp
 Restart=on-failure
 RestartSec=5
 
