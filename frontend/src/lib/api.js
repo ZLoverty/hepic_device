@@ -17,10 +17,11 @@ export const api = {
     restart:       ()            => req('POST', '/api/klipper/restart'),
   },
   materials: {
-    families: ()               => req('GET', '/api/materials/'),
-    version:  ()               => req('GET', '/api/materials/version'),
-    list:     (family)         => req('GET', `/api/materials/${encodeURIComponent(family)}`),
-    get:      (family, piCode) => req('GET', `/api/materials/${encodeURIComponent(family)}/${encodeURIComponent(piCode)}`),
+    families: ()               => req('GET',  '/api/materials/'),
+    version:  ()               => req('GET',  '/api/materials/version'),
+    sync:     ()               => req('POST', '/api/materials/sync'),
+    list:     (family)         => req('GET',  `/api/materials/${encodeURIComponent(family)}`),
+    get:      (family, piCode) => req('GET',  `/api/materials/${encodeURIComponent(family)}/${encodeURIComponent(piCode)}`),
   },
   qc: {
     start: (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),

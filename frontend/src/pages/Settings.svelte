@@ -36,6 +36,26 @@
     }
   }
 
+  // idle | syncing | done | error
+  let materialSyncState = 'idle';
+  let materialSyncMsg = '';
+
+  async function syncMaterials() {
+    materialSyncState = 'syncing';
+    materialSyncMsg = '';
+    try {
+      const r = await api.materials.sync();
+      materialDbVersion = r.version ?? materialDbVersion;
+      materialSyncState = 'done';
+      materialSyncMsg = r.changed
+        ? `已更新到 ${r.version}（${r.families} 个材料族 / ${r.materials} 种材料）`
+        : '已是最新版本';
+    } catch (e) {
+      materialSyncState = 'error';
+      materialSyncMsg = String(e);
+    }
+  }
+
   // idle | running | done | error
   let updateState = 'idle';
   let updateLog = [];
@@ -100,6 +120,25 @@
     <button class="refresh" on:click={checkKlipper}>刷新</button>
   </div>
 
+  <div class="section" style="margin-top:20px">材料数据库</div>
+  <div class="update-box">
+    <div class="row" style="border:none; padding:0; height:auto;">
+      <span class="name">当前版本 · <span class="mono">{materialDbVersion}</span></span>
+      <button
+        class="refresh"
+        on:click={syncMaterials}
+        disabled={materialSyncState === 'syncing'}
+      >
+        {materialSyncState === 'syncing' ? '同步中…' : '同步材料库'}
+      </button>
+    </div>
+    {#if materialSyncState === 'done'}
+      <div class="update-msg ok">{materialSyncMsg}</div>
+    {:else if materialSyncState === 'error'}
+      <div class="update-msg bad">同步失败：{materialSyncMsg}</div>
+    {/if}
+  </div>
+
   <div class="section" style="margin-top:20px">系统更新</div>
   <div class="update-box">
     <div class="row" style="border:none; padding:0; height:auto;">
@@ -128,7 +167,6 @@
     <div class="info-row"><span>系统</span><span class="mono">{systemName}</span></div>
     <div class="info-row"><span>后端</span><span class="mono">FastAPI + Klipper</span></div>
     <div class="info-row"><span>WiFi IP 地址</span><span class="mono">{ipAddress}</span></div>
-    <div class="info-row"><span>材料库版本</span><span class="mono">{materialDbVersion}</span></div>
   </div>
 </div>
 
