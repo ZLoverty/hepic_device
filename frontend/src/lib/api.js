@@ -26,6 +26,8 @@ export const api = {
     start: (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),
   },
   system: {
-    info: () => req('GET', '/api/system/info'),
+    info:         ()     => req('GET',  '/api/system/info'),
+    update:       ()     => req('POST', '/api/system/update'),
+    updateStatus: (tail) => req('GET',  `/api/system/update/status${tail ? `?tail=${tail}` : ''}`),
   },
 };

@@ -1,0 +1,13 @@
+# Passwordless sudo for the exact commands install.sh / update.sh need when
+# run unattended from the web UI's "更新" button (no TTY for a password
+# prompt). Installed to /etc/sudoers.d/hepic-device-etpi by
+# scripts/install_services.sh. Keep entries scoped to exact commands only —
+# do not widen to `apt-get *` or `systemctl *`, that would be root-equivalent.
+etpi ALL=(root) NOPASSWD: /usr/bin/apt-get update
+etpi ALL=(root) NOPASSWD: /usr/bin/apt-get install -y --no-install-recommends xserver-xorg xinit x11-xserver-utils chromium unclutter curl
+etpi ALL=(root) NOPASSWD: /usr/bin/cp /home/etpi/hepic_device/deploy/hepic-device-backend.service /etc/systemd/system/
+etpi ALL=(root) NOPASSWD: /usr/bin/cp /home/etpi/hepic_device/deploy/hepic-device-kiosk.service /etc/systemd/system/
+etpi ALL=(root) NOPASSWD: /usr/bin/systemctl daemon-reload
+etpi ALL=(root) NOPASSWD: /usr/bin/systemctl enable --now hepic-device-backend.service
+etpi ALL=(root) NOPASSWD: /usr/bin/systemctl enable --now hepic-device-kiosk.service
+etpi ALL=(root) NOPASSWD: /usr/bin/systemctl restart hepic-device-backend.service hepic-device-kiosk.service

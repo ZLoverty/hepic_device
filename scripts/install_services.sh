@@ -24,6 +24,10 @@ sudo cp "$REPO_ROOT/deploy/hepic-device-backend.service" /etc/systemd/system/
 sudo cp "$REPO_ROOT/deploy/hepic-device-kiosk.service" /etc/systemd/system/
 chmod +x "$REPO_ROOT/deploy/kiosk.xinitrc"
 
+echo "==> Installing passwordless sudo rule for the web UI's unattended updater"
+sudo install -m 0440 -o root -g root "$REPO_ROOT/deploy/hepic-device-etpi-sudoers" /etc/sudoers.d/hepic-device-etpi
+sudo visudo -c
+
 echo "==> Reloading systemd and enabling services"
 sudo systemctl daemon-reload
 sudo systemctl enable --now hepic-device-backend.service
@@ -41,4 +45,5 @@ Done. Useful commands:
   journalctl -u hepic-device-backend -f
   journalctl -u hepic-device-kiosk -f
   sudo systemctl restart hepic-device-backend hepic-device-kiosk
+  tail -f /home/etpi/hepic_device/update.log   # progress of web-triggered updates
 EOF
