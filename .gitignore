@@ -1,3 +1,8 @@
+# Runtime files from the web UI's self-update (scripts/update.sh)
+/update.log
+/update.lock
+/update.running
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

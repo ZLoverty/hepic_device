@@ -36,8 +36,63 @@
     }
   }
 
+  // idle | syncing | done | error
+  let materialSyncState = 'idle';
+  let materialSyncMsg = '';
+
+  async function syncMaterials() {
+    materialSyncState = 'syncing';
+    materialSyncMsg = '';
+    try {
+      const r = await api.materials.sync();
+      materialDbVersion = r.version ?? materialDbVersion;
+      materialSyncState = 'done';
+      materialSyncMsg = r.changed
+        ? `已更新到 ${r.version}（${r.families} 个材料族 / ${r.materials} 种材料）`
+        : '已是最新版本';
+    } catch (e) {
+      materialSyncState = 'error';
+      materialSyncMsg = String(e);
+    }
+  }
+
+  // idle | running | done | error
+  let updateState = 'idle';
+  let updateLog = [];
+  let pollTimer = null;
+
+  async function pollUpdateStatus() {
+    try {
+      const s = await api.system.updateStatus();
+      updateLog = s.log;
+      if (s.running) {
+        updateState = 'running';
+      } else if (updateState === 'running') {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        updateState = s.log.some((l) => l.includes('update finished')) ? 'done' : 'error';
+      }
+    } catch (e) {
+      // backend is likely mid-restart right now; keep polling silently
+    }
+  }
+
+  async function startUpdate() {
+    updateState = 'running';
+    updateLog = [];
+    try {
+      await api.system.update();
+    } catch (e) {
+      // request may not even land if a restart is already underway; the
+      // poll loop below will reconcile with reality either way
+    }
+    if (!pollTimer) pollTimer = setInterval(pollUpdateStatus, 2000);
+    pollUpdateStatus();
+  }
+
   checkKlipper();
   loadSystemInfo();
+  pollUpdateStatus(); // in case a page refresh landed mid-update
 </script>
 
 <div class="layout">
@@ -65,24 +120,67 @@
     <button class="refresh" on:click={checkKlipper}>刷新</button>
   </div>
 
+  <div class="section" style="margin-top:20px">材料数据库</div>
+  <div class="update-box">
+    <div class="row" style="border:none; padding:0; height:auto;">
+      <span class="name">当前版本 · <span class="mono">{materialDbVersion}</span></span>
+      <button
+        class="refresh"
+        on:click={syncMaterials}
+        disabled={materialSyncState === 'syncing'}
+      >
+        {materialSyncState === 'syncing' ? '同步中…' : '同步材料库'}
+      </button>
+    </div>
+    {#if materialSyncState === 'done'}
+      <div class="update-msg ok">{materialSyncMsg}</div>
+    {:else if materialSyncState === 'error'}
+      <div class="update-msg bad">同步失败：{materialSyncMsg}</div>
+    {/if}
+  </div>
+
+  <div class="section" style="margin-top:20px">系统更新</div>
+  <div class="update-box">
+    <div class="row" style="border:none; padding:0; height:auto;">
+      <span class="name">拉取最新代码、重新安装并重启服务</span>
+      <button
+        class="refresh"
+        on:click={startUpdate}
+        disabled={updateState === 'running'}
+      >
+        {updateState === 'running' ? '更新中…' : '检查并更新'}
+      </button>
+    </div>
+    {#if updateState === 'done'}
+      <div class="update-msg ok">更新完成</div>
+    {:else if updateState === 'error'}
+      <div class="update-msg bad">更新失败，请查看下方日志</div>
+    {/if}
+    {#if updateState !== 'idle'}
+      <pre class="update-log">{updateLog.join('\n') || '等待日志…'}</pre>
+    {/if}
+  </div>
+
   <div class="section" style="margin-top:20px">关于</div>
   <div class="info">
     <div class="info-row"><span>版本</span><span class="mono">{appVersion}</span></div>
     <div class="info-row"><span>系统</span><span class="mono">{systemName}</span></div>
     <div class="info-row"><span>后端</span><span class="mono">FastAPI + Klipper</span></div>
     <div class="info-row"><span>WiFi IP 地址</span><span class="mono">{ipAddress}</span></div>
-    <div class="info-row"><span>材料库版本</span><span class="mono">{materialDbVersion}</span></div>
   </div>
 </div>
 
 <style>
   .layout {
+    height: 100%;
     padding: 18px 24px;
     color: #dce4f5;
     font-family: system-ui, sans-serif;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .section {
     font-size: 10px;
@@ -127,6 +225,32 @@
     height: 32px;
   }
   .refresh:active { background: #2e3352; }
+  .refresh:disabled { opacity: .5; cursor: default; }
+
+  .update-box {
+    background: #131623;
+    border: 1px solid #1e2235;
+    padding: 14px 16px;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .update-msg { font-size: 13px; }
+  .update-log {
+    margin: 0;
+    max-height: 160px;
+    overflow-y: auto;
+    background: #0d0f18;
+    border: 1px solid #1a1e30;
+    border-radius: 2px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: #8a92b2;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
 
   .info {
     background: #131623;

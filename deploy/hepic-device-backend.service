@@ -10,6 +10,10 @@ WorkingDirectory=/home/etpi/hepic_device
 ExecStart=/home/etpi/hepic_device/.venv/bin/hepic-device
 Restart=on-failure
 RestartSec=3
+# The backend spawns scripts/update.sh detached to self-update, then that
+# script restarts this unit. Default KillMode=control-group would kill the
+# updater too when this unit stops; "process" only signals the main PID.
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target

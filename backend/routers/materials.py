@@ -1,5 +1,8 @@
+import asyncio
+
 from fastapi import APIRouter, HTTPException
 
+from HEPiC.database import sync_materials
 from HEPiC.database.material_database import get_material_database
 
 router = APIRouter()
@@ -17,6 +20,24 @@ def list_families():
 @router.get("/version")
 def get_version():
     return {"version": _db().get_version()}
+
+
+@router.post("/sync")
+async def sync():
+    """Pull the latest material database (GitHub release, falling back to the
+    Tencent COS mirror) and reload it into the running process. No restart
+    needed — sync_materials() never raises, it just logs and keeps the
+    existing cache on any failure."""
+    before = _db().get_version()
+    await asyncio.to_thread(sync_materials)
+    db = _db()
+    db.load()
+    return {
+        "version": db.get_version(),
+        "changed": db.get_version() != before,
+        "families": len(db.get_family_names()),
+        "materials": len(db.materials),
+    }
 
 
 @router.get("/{family}")
