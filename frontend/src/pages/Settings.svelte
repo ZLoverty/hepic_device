@@ -134,12 +134,15 @@
 
 <style>
   .layout {
+    height: 100%;
     padding: 18px 24px;
     color: #dce4f5;
     font-family: system-ui, sans-serif;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .section {
     font-size: 10px;
