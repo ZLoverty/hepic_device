@@ -17,8 +17,10 @@ TTYVTDisallocate=yes
 WorkingDirectory=/home/etpi
 Environment=DISPLAY=:0
 ExecStart=/usr/bin/startx /home/etpi/hepic_device/deploy/kiosk.xinitrc -- :0 vt1 -keeptty -nolisten tcp
+ExecStop=/bin/sh -c 'pkill -TERM -u etpi -x Xorg; pkill -TERM -u etpi -x chromium; pkill -TERM -u etpi -f chrome_crashpad_handler; exit 0'
 Restart=on-failure
 RestartSec=5
+TimeoutStopSec=10
 
 [Install]
 WantedBy=multi-user.target

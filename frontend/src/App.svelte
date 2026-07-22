@@ -116,7 +116,7 @@
 <style>
   :global(*, *::before, *::after) { box-sizing: border-box; margin: 0; padding: 0; }
   :global(html, body) {
-    width: 800px; height: 480px;
+    width: 100%; height: 100%;
     overflow: hidden;
     background: #141824;
     color: #eef2ff;
@@ -127,7 +127,7 @@
   :global(button) { cursor: pointer; }
 
   .shell {
-    width: 800px; height: 480px;
+    width: 100vw; height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: #141824;

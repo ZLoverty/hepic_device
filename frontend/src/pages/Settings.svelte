@@ -6,6 +6,8 @@
   let klipperMsg = '';
   let ipAddress  = '检测中...';
   let materialDbVersion = '检测中...';
+  let systemName = '检测中...';
+  let appVersion = '检测中...';
 
   async function checkKlipper() {
     klipperOk = null;
@@ -24,9 +26,13 @@
       const s = await api.system.info();
       ipAddress = s.ip_address ?? '未知';
       materialDbVersion = s.material_db_version ?? '未知';
+      systemName = s.system_name ?? '未知';
+      appVersion = s.version ? `v${s.version}` : '未知';
     } catch (e) {
       ipAddress = '获取失败';
       materialDbVersion = '获取失败';
+      systemName = '获取失败';
+      appVersion = '获取失败';
     }
   }
 
@@ -61,8 +67,8 @@
 
   <div class="section" style="margin-top:20px">关于</div>
   <div class="info">
-    <div class="info-row"><span>版本</span><span class="mono">v0.1.0</span></div>
-    <div class="info-row"><span>系统</span><span class="mono">HEPiC Embedded</span></div>
+    <div class="info-row"><span>版本</span><span class="mono">{appVersion}</span></div>
+    <div class="info-row"><span>系统</span><span class="mono">{systemName}</span></div>
     <div class="info-row"><span>后端</span><span class="mono">FastAPI + Klipper</span></div>
     <div class="info-row"><span>WiFi IP 地址</span><span class="mono">{ipAddress}</span></div>
     <div class="info-row"><span>材料库版本</span><span class="mono">{materialDbVersion}</span></div>
