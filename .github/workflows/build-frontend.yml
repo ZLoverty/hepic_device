@@ -102,9 +102,28 @@ jobs:
       - name: Package build artifact
         id: package
         run: |
-          asset="hepic-device-static-${{ steps.tag.outputs.tag }}.tar.gz"
-          tar -czf "$asset" -C backend static
-          echo "asset=$asset" >> "$GITHUB_OUTPUT"
+          tag="${{ steps.tag.outputs.tag }}"
+          static_asset="hepic-device-${tag}-static.tar.gz"
+          tar -czf "$static_asset" -C backend static
+          echo "static_asset=$static_asset" >> "$GITHUB_OUTPUT"
+
+      # Plain git archive of the tagged tree (no .git, no build/, no backend/static
+      # since that's gitignored) — this is what devices `pip install -e` from
+      # instead of `git clone`, mirrored separately from the static bundle above.
+      - name: Package source artifact
+        id: package_src
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          src_asset="hepic-device-${tag}-src.tar.gz"
+          git archive --format=tar.gz --prefix="hepic-device-${tag}/" -o "$src_asset" HEAD
+          echo "src_asset=$src_asset" >> "$GITHUB_OUTPUT"
+
+      - name: Generate checksums
+        id: checksums
+        run: |
+          sums="SHA256SUMS.txt"
+          sha256sum "${{ steps.package_src.outputs.src_asset }}" "${{ steps.package.outputs.static_asset }}" > "$sums"
+          echo "sums=$sums" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -116,6 +135,42 @@ jobs:
 
             ### What's New
             ${{ steps.notes.outputs.notes }}
-          files: ${{ steps.package.outputs.asset }}
+          files: |
+            ${{ steps.package.outputs.static_asset }}
+            ${{ steps.package_src.outputs.src_asset }}
+            ${{ steps.checksums.outputs.sums }}
           draft: false
           prerelease: ${{ contains(steps.tag.outputs.tag, '-') }}
+
+      # Mirrors the same three files to Tencent COS so devices behind the
+      # Great Firewall don't have to reach GitHub at all. Requires repo
+      # secrets COS_SECRET_ID / COS_SECRET_KEY / COS_BUCKET / COS_REGION,
+      # and a bucket with public-read (or a CDN domain in front of it).
+      - name: Install coscmd
+        run: pip install coscmd
+
+      - name: Configure coscmd
+        env:
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ${{ secrets.COS_REGION }}
+        run: coscmd config -a "$COS_SECRET_ID" -s "$COS_SECRET_KEY" -b "$COS_BUCKET" -r "$COS_REGION"
+
+      - name: Upload release artifacts to COS
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          prefix="hepic-device/releases/$tag"
+          coscmd upload "${{ steps.package_src.outputs.src_asset }}" "$prefix/${{ steps.package_src.outputs.src_asset }}"
+          coscmd upload "${{ steps.package.outputs.static_asset }}" "$prefix/${{ steps.package.outputs.static_asset }}"
+          coscmd upload "${{ steps.checksums.outputs.sums }}" "$prefix/${{ steps.checksums.outputs.sums }}"
+
+      # Only stable tags (no "-" suffix, same rule as the prerelease flag
+      # above) move the "latest" pointer, and only after both archives are
+      # confirmed on COS — devices resolve "latest" by reading this pointer
+      # rather than us duplicating the archives under a "latest/" prefix.
+      - name: Update latest.json pointer on COS
+        if: ${{ !contains(steps.tag.outputs.tag, '-') }}
+        run: |
+          echo "{\"tag\": \"${{ steps.tag.outputs.tag }}\"}" > latest.json
+          coscmd upload latest.json hepic-device/latest.json

@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-# Download the frontend build artifact and extract it into backend/static/.
+# Download the full project source archive (a git archive of the tagged
+# tree, no .git/ history) as an alternative to `git clone` — useful in
+# networks where reaching github.com directly is slow or unreliable.
 #
-# Tries the Tencent COS mirror first (see .github/workflows/build-frontend.yml
-# for how it's populated), then falls back to the GitHub Release asset if the
-# mirror is unreachable or doesn't have the file yet.
+# Tries the Tencent COS mirror first, then falls back to the GitHub Release
+# asset (see .github/workflows/build-frontend.yml for how both are produced).
 #
 # Usage:
-#   scripts/fetch_static.sh            # latest release
-#   scripts/fetch_static.sh v0.2.0     # specific tag
+#   scripts/fetch_src.sh                    # latest release, extract into ./
+#   scripts/fetch_src.sh v0.2.0             # specific tag
+#   scripts/fetch_src.sh v0.2.0 /opt/hepic  # extract into a chosen directory
+#
+# Extracts to <target>/hepic-device-<tag>/ (the archive's own top-level
+# folder) — this does NOT include backend/static (gitignored, built
+# separately, see fetch_static.sh) or the venv; run install.sh afterward.
 #
 # For a private repo, export GITHUB_TOKEN with a token that has read access.
 # Override HEPIC_COS_DOMAIN to point at a different bucket/CDN for testing.
@@ -15,10 +21,9 @@ set -euo pipefail
 
 REPO="ZLoverty/hepic_device"
 TAG="${1:-latest}"
+TARGET_DIR="${2:-.}"
 COS_DOMAIN="${HEPIC_COS_DOMAIN:-https://REPLACE-WITH-YOUR-BUCKET.cos.REPLACE-REGION.myqcloud.com}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TMP_TAR="$(mktemp)"
 trap 'rm -f "$TMP_TAR"' EXIT
 
@@ -30,7 +35,7 @@ fetch_from_cos() {
     [ -n "$tag" ] || return 1
   fi
   echo "Trying COS mirror for $tag"
-  curl -fsSL "$COS_DOMAIN/hepic-device/releases/$tag/hepic-device-${tag}-static.tar.gz" -o "$TMP_TAR" 2>/dev/null
+  curl -fsSL "$COS_DOMAIN/hepic-device/releases/$tag/hepic-device-${tag}-src.tar.gz" -o "$TMP_TAR" 2>/dev/null
 }
 
 fetch_from_github() {
@@ -49,7 +54,7 @@ fetch_from_github() {
   echo "Falling back to GitHub release: $TAG"
   local asset_id
   asset_id=$(curl -fsSL "${auth_header[@]}" "$api_url" \
-    | python3 -c "import sys, json; d = json.load(sys.stdin); print(next(a['id'] for a in d['assets'] if a['name'].endswith('-static.tar.gz')))")
+    | python3 -c "import sys, json; d = json.load(sys.stdin); print(next(a['id'] for a in d['assets'] if a['name'].endswith('-src.tar.gz')))")
 
   echo "Downloading asset $asset_id"
   curl -fsSL "${auth_header[@]}" -H "Accept: application/octet-stream" \
@@ -60,8 +65,8 @@ if ! fetch_from_cos; then
   fetch_from_github
 fi
 
-echo "Extracting into $REPO_ROOT/backend/"
-rm -rf "$REPO_ROOT/backend/static"
-tar -xzf "$TMP_TAR" -C "$REPO_ROOT/backend"
+mkdir -p "$TARGET_DIR"
+echo "Extracting into $TARGET_DIR/"
+tar -xzf "$TMP_TAR" -C "$TARGET_DIR"
 
-echo "Done: $REPO_ROOT/backend/static"
+echo "Done. cd into the extracted hepic-device-*/ directory and run ./install.sh"
