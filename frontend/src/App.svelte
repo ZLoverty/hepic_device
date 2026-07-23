@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
-  import { sensorData, forceHistory, wsConnected, qcState, qcForceHistory } from './lib/stores.js';
+  import { sensorData, forceHistory, wsConnected, qcState, qcForceHistory, qcHistory } from './lib/stores.js';
   import { createReconnectingWS } from './lib/ws.js';
   import { api } from './lib/api.js';
   import NavBar        from './components/NavBar.svelte';
@@ -53,6 +53,14 @@
 
     if (up.includes('STOP_QUALITY_CHECK')) {
       const frozenForce = get(sensorData).extrusion_force_N;
+      const { family, piCode } = get(qcState);
+      const samples = get(qcForceHistory).filter(v => v !== null && isFinite(v));
+      let mean = null, std = null;
+      if (samples.length >= 2) {
+        mean = samples.reduce((a, b) => a + b, 0) / samples.length;
+        std  = Math.sqrt(samples.reduce((s, v) => s + (v - mean) ** 2, 0) / samples.length);
+      }
+      qcHistory.update(h => [{ time: Date.now(), mean, std, family, piCode }, ...h].slice(0, 50));
       qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null, frozenForce }));
       return;
     }

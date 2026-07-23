@@ -32,3 +32,9 @@ export const qcState = writable({
 /** Force readings accumulated during the current QC session. */
 export const qcForceHistory = writable(/** @type {number[]} */([]));
 
+/**
+ * Completed QC runs, newest first. In-memory only (cleared on app restart) —
+ * mirrors HEPiC's own 质检历史 panel, which never persists to disk either.
+ */
+export const qcHistory = writable(/** @type {{time:number, mean:number|null, std:number|null, family:string|null, piCode:string|null}[]} */([]));
+
