@@ -33,8 +33,9 @@ export const qcState = writable({
 export const qcForceHistory = writable(/** @type {number[]} */([]));
 
 /**
- * Completed QC runs, newest first. In-memory only (cleared on app restart) —
- * mirrors HEPiC's own 质检历史 panel, which never persists to disk either.
+ * Completed QC runs, newest first. Backed by the device's local
+ * `/api/qc/history` (SQLite, via the shared HEPiC.database.QcHistoryStore) —
+ * fetched on startup in App.svelte and appended to as runs finish.
  */
-export const qcHistory = writable(/** @type {{time:number, mean:number|null, std:number|null, family:string|null, piCode:string|null}[]} */([]));
+export const qcHistory = writable(/** @type {{id:number, timestamp:string, family:string|null, pi_code:string|null, mean_force:number|null, std_force:number|null}[]} */([]));
 

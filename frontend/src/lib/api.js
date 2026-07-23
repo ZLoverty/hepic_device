@@ -24,7 +24,9 @@ export const api = {
     get:      (family, piCode) => req('GET',  `/api/materials/${encodeURIComponent(family)}/${encodeURIComponent(piCode)}`),
   },
   qc: {
-    start: (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),
+    start:   (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),
+    history: (limit)           => req('GET',  `/api/qc/history${limit ? `?limit=${limit}` : ''}`),
+    addHistory: (rec)          => req('POST', '/api/qc/history', rec),
   },
   system: {
     info:         ()     => req('GET',  '/api/system/info'),

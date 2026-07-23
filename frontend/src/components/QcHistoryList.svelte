@@ -1,16 +1,34 @@
 <script>
-  export let records = /** @type {{time:number, mean:number|null, std:number|null, family:string|null, piCode:string|null}[]} */ ([]);
+  export let records = /** @type {{id:number, timestamp:string, family:string|null, pi_code:string|null, mean_force:number|null, std_force:number|null}[]} */ ([]);
 
-  function fmtTime(ms) {
-    const d = new Date(ms);
+  function fmtTime(iso) {
+    const d = new Date(iso);
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   function fmtForce(rec) {
-    return (rec.mean !== null && rec.std !== null)
-      ? `${rec.mean.toFixed(2)} ± ${rec.std.toFixed(3)} N`
+    return (rec.mean_force !== null && rec.std_force !== null)
+      ? `${rec.mean_force.toFixed(2)} ± ${rec.std_force.toFixed(3)} N`
       : '数据不足';
   }
+
+  // Records already arrive newest-first; group consecutive rows sharing a
+  // calendar date under one header so the date only appears once per day.
+  $: groups = (() => {
+    const out = [];
+    for (const rec of records) {
+      const date = fmtDate(rec.timestamp);
+      const last = out[out.length - 1];
+      if (last && last.date === date) last.rows.push(rec);
+      else out.push({ date, rows: [rec] });
+    }
+    return out;
+  })();
 </script>
 
 <div class="hist">
@@ -19,12 +37,15 @@
     <div class="empty">暂无记录</div>
   {:else}
     <div class="rows">
-      {#each records as rec (rec.time)}
-        <div class="row">
-          <span class="time">{fmtTime(rec.time)}</span>
-          <span class="force">{fmtForce(rec)}</span>
-          <span class="code">{rec.piCode ?? rec.family ?? '--'}</span>
-        </div>
+      {#each groups as group (group.date)}
+        <div class="date-header">{group.date}</div>
+        {#each group.rows as rec (rec.id)}
+          <div class="row">
+            <span class="time">{fmtTime(rec.timestamp)}</span>
+            <span class="force">{fmtForce(rec)}</span>
+            <span class="code">{rec.pi_code ?? rec.family ?? '--'}</span>
+          </div>
+        {/each}
       {/each}
     </div>
   {/if}
@@ -61,6 +82,18 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+  }
+  .date-header {
+    position: sticky;
+    top: 0;
+    padding: 6px 18px;
+    background: #141a30;
+    color: #7aa5f4;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    font-family: 'Courier New', Courier, monospace;
+    border-bottom: 1px solid #2e3a58;
   }
   .row {
     display: grid;
