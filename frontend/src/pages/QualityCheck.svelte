@@ -3,6 +3,7 @@
   import LineChart from '../components/LineChart.svelte';
   import { api } from '../lib/api.js';
   import { sensorData, qcState, qcForceHistory } from '../lib/stores.js';
+  import { evaluateForceWindow } from '../lib/forceWindow.js';
 
   // ── Ephemeral UI state: material picker lists ─────────────────────
   let families  = [];
@@ -17,12 +18,6 @@
   $: liveTemp   = $sensorData.hotend_temperature;
   $: liveFeed   = $sensorData.feedrate_mms;
 
-  // The reading is frozen in the qcState store the instant the run finishes
-  // (see App.svelte's STOP_QUALITY_CHECK handler), so the inspector has time
-  // to record it instead of watching it keep drifting toward zero. Keeping
-  // the snapshot in the store (rather than component-local state) means it
-  // survives navigating away from this page and back before hitting "完成".
-  $: curForce   = $qcState.phase === 'done' ? $qcState.frozenForce : $sensorData.extrusion_force_N;
   $: forceColor = (() => {
     if (curForce === null || !isFinite(curForce) || fMin === null) return '#f5a623';
     if (curForce < fMin || curForce > fMax) return '#e5484d';
@@ -74,14 +69,12 @@
   $: isIndeterminate = $qcState.phase === 'running' && !$qcState.extrudeStartedAt
                        && $qcState.statusMsg.includes('加热');
 
-  // Standard deviation over the 30 s rolling window stored in qcForceHistory.
-  $: stdDev30s = (() => {
-    const pts = $qcForceHistory.filter(v => v !== null && isFinite(v));
-    if (pts.length < 2) return null;
-    const mean = pts.reduce((a, b) => a + b, 0) / pts.length;
-    const variance = pts.reduce((s, v) => s + (v - mean) ** 2, 0) / pts.length;
-    return Math.sqrt(variance);
-  })();
+  // qcForceHistory itself freezes once the run leaves 'running' (see App.svelte),
+  // so this stays stable through the 'done' phase without a separate snapshot.
+  // Same window used when persisting the record in App.svelte, so the number
+  // shown here always matches what lands in the QC history list.
+  $: forceEval = evaluateForceWindow($qcForceHistory);
+  $: curForce  = forceEval?.mean ?? null;
 
   onDestroy(() => { clearInterval(extrudeTimer); });
 
@@ -122,19 +115,19 @@
   async function startQC() {
     if (!$qcState.family || !$qcState.piCode) return;
     qcForceHistory.set([]);
-    qcState.update(s => ({ ...s, phase: 'running', statusMsg: '正在启动...', extrudeStartedAt: null, frozenForce: null }));
+    qcState.update(s => ({ ...s, phase: 'running', statusMsg: '正在启动...', extrudeStartedAt: null }));
     await api.qc.start($qcState.family, $qcState.piCode).catch(console.error);
   }
 
   async function abort() {
     clearInterval(extrudeTimer);
     extrudeTimer = null;
-    qcState.update(s => ({ ...s, phase: 'idle', statusMsg: '', extrudeStartedAt: null, frozenForce: null }));
+    qcState.update(s => ({ ...s, phase: 'idle', statusMsg: '', extrudeStartedAt: null }));
     await api.klipper.emergencyStop().catch(console.error);
   }
 
   function finish() {
-    qcState.update(s => ({ ...s, phase: 'idle', statusMsg: '', extrudeStartedAt: null, frozenForce: null }));
+    qcState.update(s => ({ ...s, phase: 'idle', statusMsg: '', extrudeStartedAt: null }));
   }
 </script>
 
@@ -243,7 +236,7 @@
       </div>
       <div class="force-std">
         <div class="std-num">
-          ±{stdDev30s !== null ? stdDev30s.toFixed(3) : '---'}
+          ±{forceEval !== null ? forceEval.std.toFixed(3) : '---'}
         </div>
       </div>
     </div>

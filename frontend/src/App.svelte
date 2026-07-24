@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
   import { sensorData, forceHistory, wsConnected, qcState, qcForceHistory, qcHistory } from './lib/stores.js';
+  import { evaluateForceWindow } from './lib/forceWindow.js';
   import { createReconnectingWS } from './lib/ws.js';
   import { api } from './lib/api.js';
   import NavBar        from './components/NavBar.svelte';
@@ -52,21 +53,19 @@
     const up   = text.toUpperCase();
 
     if (up.includes('STOP_QUALITY_CHECK')) {
-      const frozenForce = get(sensorData).extrusion_force_N;
       const { family, piCode } = get(qcState);
-      const samples = get(qcForceHistory).filter(v => v !== null && isFinite(v));
-      let mean_force = null, std_force = null;
-      if (samples.length >= 2) {
-        mean_force = samples.reduce((a, b) => a + b, 0) / samples.length;
-        std_force  = Math.sqrt(samples.reduce((s, v) => s + (v - mean_force) ** 2, 0) / samples.length);
-      }
+      // Same rolling window QualityCheck.svelte uses for the live "frozen"
+      // display, so the persisted record always matches what was on screen.
+      const forceEval = evaluateForceWindow(get(qcForceHistory));
+      const mean_force = forceEval?.mean ?? null;
+      const std_force  = forceEval?.std ?? null;
       // Persist to the device's local SQLite history; the store is only
       // updated once the write is confirmed, so the UI reflects what's
       // actually on disk rather than an optimistic guess.
       api.qc.addHistory({ family, pi_code: piCode, mean_force, std_force })
         .then(rec => qcHistory.update(h => [rec, ...h]))
         .catch(console.error);
-      qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null, frozenForce }));
+      qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null }));
       return;
     }
     if (up.includes('START_QUALITY_CHECK')) {

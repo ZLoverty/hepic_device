@@ -26,7 +26,6 @@ export const qcState = writable({
   piCode:   /** @type {string|null} */ (null),
   material: /** @type {object|null} */ (null),
   extrudeStartedAt: /** @type {number|null} */ (null),  // Date.now() when extrusion begins
-  frozenForce: /** @type {number|null} */ (null),  // force snapshot at STOP_QUALITY_CHECK; held until "完成"
 });
 
 /** Force readings accumulated during the current QC session. */
