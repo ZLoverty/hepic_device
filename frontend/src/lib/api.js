@@ -12,6 +12,7 @@ export const api = {
   klipper: {
     status:        ()            => req('GET',  '/api/klipper/status'),
     setTemp:       (temperature) => req('POST', '/api/klipper/temperature',    { temperature }),
+    zeroSensors:   ()            => req('POST', '/api/klipper/zero_sensors'),
     gcode:         (script)      => req('POST', '/api/klipper/gcode',          { script }),
     emergencyStop: ()            => req('POST', '/api/klipper/emergency_stop'),
     restart:       ()            => req('POST', '/api/klipper/restart'),

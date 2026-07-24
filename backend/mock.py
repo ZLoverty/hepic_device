@@ -37,6 +37,9 @@ class MockTCPClient:
     def get_zeroable_sensor_names(self):
         return []
 
+    def zero_sensor(self, sensor_name: str):
+        logger.info("[MOCK] Zero sensor: %s", sensor_name)
+
 
 class MockKlipperWorker:
     """Simulates Moonraker/Klipper with slowly-changing state."""

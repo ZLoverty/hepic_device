@@ -52,6 +52,10 @@
     const text = msg?.response ?? '';
     const up   = text.toUpperCase();
 
+    if (up.includes('ZERO_SENSORS')) {
+      api.klipper.zeroSensors().catch(console.error);
+      return;
+    }
     if (up.includes('STOP_QUALITY_CHECK')) {
       const { family, piCode } = get(qcState);
       // Same rolling window QualityCheck.svelte uses for the live "frozen"
