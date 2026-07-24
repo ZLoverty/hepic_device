@@ -90,30 +90,8 @@
 </script>
 
 <div class="layout">
-  <!-- Top bar: controls + live values grouped on the left, e-stop isolated on the right -->
+  <!-- Top bar: live values on the left, e-stop isolated on the right -->
   <div class="topbar">
-    <div class="tb-group">
-      <button class="tb-btn tb-retract" disabled={stopped}
-        aria-label="回抽"
-        on:pointerdown={() => startHold(-1)}
-        on:pointerup={endHold}
-        on:pointercancel={endHold}>
-        <svg viewBox="0 0 24 24"><polygon points="12,5 20,17 4,17"/></svg>回抽
-      </button>
-      <button class="tb-btn tb-extrude" disabled={stopped}
-        aria-label="挤出"
-        on:pointerdown={() => startHold(1)}
-        on:pointerup={endHold}
-        on:pointercancel={endHold}>
-        <svg viewBox="0 0 24 24"><polygon points="12,19 4,7 20,7"/></svg>挤出
-      </button>
-      <button class="tb-btn tb-temp" on:click={openNumpad}>
-        {tempDisplay}<span class="tb-temp-sep">/</span>{tgtDisplay}<span class="tb-unit">°C</span>
-      </button>
-    </div>
-
-    <div class="tb-div"></div>
-
     <div class="tb-group">
       <div class="tb-stat">
         <span class="tb-stat-label">进线速度</span>
@@ -134,6 +112,31 @@
     <!-- Left: QC history -->
     <div class="side">
       <QcHistoryList records={$qcHistory} />
+    </div>
+
+    <!-- Middle: extrude/retract + temp, stacked top to bottom -->
+    <div class="controls-col">
+      <button class="dir retract" disabled={stopped}
+        aria-label="回抽"
+        on:pointerdown={() => startHold(-1)}
+        on:pointerup={endHold}
+        on:pointercancel={endHold}>
+        <svg viewBox="0 0 24 24"><polygon points="12,5 20,17 4,17"/></svg>
+      </button>
+      <button class="dir extrude" disabled={stopped}
+        aria-label="挤出"
+        on:pointerdown={() => startHold(1)}
+        on:pointerup={endHold}
+        on:pointercancel={endHold}>
+        <svg viewBox="0 0 24 24"><polygon points="12,19 4,7 20,7"/></svg>
+      </button>
+      <button class="temp-card" on:click={openNumpad}>
+        <div class="temp-row">
+          <span class="temp-cur">{tempDisplay}</span><span class="temp-sep">/</span><span
+            class="temp-tgt">{tgtDisplay}</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="edit-hint">点击设置 ✎</div>
+      </button>
     </div>
 
     <!-- Right: live force sparkline -->
@@ -190,7 +193,7 @@
     flex-direction: column;
   }
 
-  /* ── Top bar: controls + values grouped on the left, e-stop pinned right ── */
+  /* ── Top bar: live values on the left, e-stop pinned right ── */
   .topbar {
     flex-shrink: 0;
     height: 46px;
@@ -205,69 +208,32 @@
     align-items: center;
     gap: 8px;
   }
-  .tb-div {
-    width: 1px;
-    align-self: stretch;
-    margin: 10px 0;
-    background: #252d48;
-  }
 
-  /* Shared 32px pill sizing — matches the e-stop button height */
-  .tb-btn, .tb-stat, .estop {
+  .tb-stat, .estop {
     height: 32px;
     border-radius: 16px;
     font-family: system-ui, sans-serif;
   }
 
-  .tb-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 0 14px;
-    background: #1a1f35;
-    border: 1px solid;
-    color: #eef2ff;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Courier New', Courier, monospace;
-    cursor: pointer;
-    transition: background .12s, opacity .1s;
-  }
-  .tb-btn svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
-  .tb-btn:active:not(:disabled) { opacity: .7; }
-  .tb-btn:disabled { opacity: .3; cursor: not-allowed; }
-
-  .tb-retract { border-color: #5b8dee55; color: #5b8dee; }
-  .tb-retract:active:not(:disabled) { background: #1a2442; }
-  .tb-extrude { border-color: #26bf6e55; color: #26bf6e; }
-  .tb-extrude:active:not(:disabled) { background: #1a3a28; }
-  .tb-temp {
-    border-color: #f9731655;
-    color: #f97316;
-    font-size: 14px;
-  }
-  .tb-temp:active { background: #2a1a0e; }
-  .tb-temp-sep { color: #5a6380; margin: 0 1px; }
-
   .tb-stat {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 6px;
     padding: 0 12px;
     background: #1a1f35;
     border: 1px solid #2e3a58;
   }
   .tb-stat-label {
-    font-size: 11px;
+    font-size: 16px;
     letter-spacing: .06em;
     color: #7888b0;
   }
   .tb-stat-val {
-    font-size: 14px;
+    font-size: 16px;
     color: #eef2ff;
     font-family: 'Courier New', Courier, monospace;
   }
-  .tb-unit { font-size: 11px; color: #7888b0; margin-left: 2px; }
+  .tb-unit { font-size: 16px; color: #7888b0; margin-left: 2px; }
 
   .estop {
     margin-left: auto;
@@ -285,13 +251,14 @@
   .estop:active:not(:disabled) { background: #e5484d; color: #fff; }
   .estop:disabled { opacity: .35; cursor: not-allowed; }
 
+  /* ── Main: three columns — QC history / controls / force chart ── */
   .main {
     flex: 1;
     min-height: 0;
     display: flex;
   }
   .side {
-    width: 258px;
+    width: 240px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -301,6 +268,71 @@
     flex: 1;
     min-width: 0;
     padding: 4px 4px 4px 0;
+  }
+
+  /* ── Middle column: retract / extrude / temp, stacked ── */
+  .controls-col {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 16px 0;
+    border-right: 1px solid #252d48;
+  }
+  .dir {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: #232a48;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .12s, opacity .1s;
+  }
+  .dir svg { width: 34px; height: 34px; fill: currentColor; }
+  .dir:active:not(:disabled) { opacity: .7; }
+  .dir:disabled { opacity: .3; cursor: not-allowed; }
+  .dir.retract { border-color: #5b8dee; color: #5b8dee; }
+  .dir.retract:active:not(:disabled) { background: #1a2442; }
+  .dir.extrude { border-color: #26bf6e; color: #26bf6e; }
+  .dir.extrude:active:not(:disabled) { background: #1a3a28; }
+
+  .temp-card {
+    width: 132px;
+    background: #1a1f35;
+    border: 2px solid #f97316;
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px #f973161f, 0 2px 10px #f9731633;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: background .12s, box-shadow .12s;
+  }
+  .temp-card:active {
+    background: #232a48;
+    box-shadow: 0 0 0 3px #f9731633, 0 2px 10px #f9731655;
+  }
+  .temp-row {
+    line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .temp-cur { font-size: 26px; font-weight: 700; color: #f97316; text-shadow: 0 0 20px #f973164d; }
+  .temp-sep { font-size: 20px; color: #5a6380; margin: 0 2px; }
+  .temp-tgt { font-size: 20px; color: #9aa8cc; }
+  .temp-unit { font-size: 13px; color: #7888b0; margin-left: 3px; }
+  .edit-hint {
+    font-size: 11px;
+    color: #f5a623;
+    font-family: system-ui, sans-serif;
+    letter-spacing: .02em;
   }
 
   /* ── Numpad / confirm overlay ── */
