@@ -258,7 +258,7 @@
     display: flex;
   }
   .side {
-    width: 240px;
+    width: 270px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
