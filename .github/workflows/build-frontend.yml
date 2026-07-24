@@ -103,7 +103,7 @@ jobs:
         id: package
         run: |
           tag="${{ steps.tag.outputs.tag }}"
-          static_asset="hepic-device-${tag}-static.tar.gz"
+          static_asset="hepic-device-static-${tag}.tar.gz"
           tar -czf "$static_asset" -C backend static
           echo "static_asset=$static_asset" >> "$GITHUB_OUTPUT"
 
@@ -114,7 +114,7 @@ jobs:
         id: package_src
         run: |
           tag="${{ steps.tag.outputs.tag }}"
-          src_asset="hepic-device-${tag}-src.tar.gz"
+          src_asset="hepic-device-src-${tag}.tar.gz"
           git archive --format=tar.gz --prefix="hepic-device-${tag}/" -o "$src_asset" HEAD
           echo "src_asset=$src_asset" >> "$GITHUB_OUTPUT"
 

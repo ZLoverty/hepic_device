@@ -35,7 +35,7 @@ fetch_from_cos() {
     [ -n "$tag" ] || return 1
   fi
   echo "Trying COS mirror for $tag"
-  curl -fsSL "$COS_DOMAIN/hepic-device/releases/$tag/hepic-device-${tag}-src.tar.gz" -o "$TMP_TAR" 2>/dev/null
+  curl -fsSL "$COS_DOMAIN/hepic-device/releases/$tag/hepic-device-src-${tag}.tar.gz" -o "$TMP_TAR" 2>/dev/null
 }
 
 fetch_from_github() {
@@ -54,7 +54,7 @@ fetch_from_github() {
   echo "Falling back to GitHub release: $TAG"
   local asset_id
   asset_id=$(curl -fsSL "${auth_header[@]}" "$api_url" \
-    | python3 -c "import sys, json; d = json.load(sys.stdin); print(next(a['id'] for a in d['assets'] if a['name'].endswith('-src.tar.gz')))")
+    | python3 -c "import sys, json; d = json.load(sys.stdin); print(next(a['id'] for a in d['assets'] if a['name'].startswith('hepic-device-src-')))")
 
   echo "Downloading asset $asset_id"
   curl -fsSL "${auth_header[@]}" -H "Accept: application/octet-stream" \
