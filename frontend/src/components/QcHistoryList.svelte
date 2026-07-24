@@ -13,7 +13,7 @@
 
   function fmtForce(rec) {
     return (rec.mean_force !== null && rec.std_force !== null)
-      ? `${rec.mean_force.toFixed(2)} ± ${rec.std_force.toFixed(3)} N`
+      ? `${rec.mean_force.toFixed(2)} ± ${rec.std_force.toFixed(2)}`
       : '数据不足';
   }
 
@@ -103,9 +103,10 @@
     padding: 9px 18px;
     border-bottom: 1px solid #232a48;
     font-family: 'Courier New', Courier, monospace;
+    white-space: nowrap;
   }
   .row:last-child { border-bottom: none; }
-  .time  { color: #5a6888; font-size: 13px; }
-  .force { color: #eef2ff; font-size: 14px; }
-  .code  { color: #7aa5f4; font-size: 13px; }
+  .time  { color: #5a6888; font-size: 13px; flex-shrink: 0; }
+  .force { color: #eef2ff; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .code  { color: #7aa5f4; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 </style>
