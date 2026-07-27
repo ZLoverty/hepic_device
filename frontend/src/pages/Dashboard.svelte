@@ -150,7 +150,6 @@
           <span class="temp-cur">{tempDisplay}</span><span class="temp-sep">/</span><span
             class="temp-tgt">{tgtDisplay}</span><span class="temp-unit">°C</span>
         </div>
-        <div class="edit-hint">点击设置 ✎</div>
       </button>
     </div>
 
