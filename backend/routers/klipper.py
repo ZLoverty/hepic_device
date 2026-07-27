@@ -46,6 +46,14 @@ async def send_gcode(body: GcodeRequest, request: Request):
     return {"ok": True}
 
 
+@router.post("/zero_sensors")
+async def zero_sensors(request: Request):
+    tcp_client = _state(request).tcp_client
+    for name in tcp_client.get_zeroable_sensor_names():
+        tcp_client.zero_sensor(name)
+    return {"ok": True}
+
+
 @router.post("/emergency_stop")
 async def emergency_stop(request: Request):
     await _state(request).klipper.emergency_stop()

@@ -1,7 +1,8 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
-  import { sensorData, forceHistory, wsConnected, qcState, qcForceHistory } from './lib/stores.js';
+  import { sensorData, forceHistory, wsConnected, qcState, qcForceHistory, qcHistory } from './lib/stores.js';
+  import { evaluateForceWindow } from './lib/forceWindow.js';
   import { createReconnectingWS } from './lib/ws.js';
   import { api } from './lib/api.js';
   import NavBar        from './components/NavBar.svelte';
@@ -51,9 +52,24 @@
     const text = msg?.response ?? '';
     const up   = text.toUpperCase();
 
+    if (up.includes('ZERO_SENSORS')) {
+      api.klipper.zeroSensors().catch(console.error);
+      return;
+    }
     if (up.includes('STOP_QUALITY_CHECK')) {
-      const frozenForce = get(sensorData).extrusion_force_N;
-      qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null, frozenForce }));
+      const { family, piCode } = get(qcState);
+      // Same rolling window QualityCheck.svelte uses for the live "frozen"
+      // display, so the persisted record always matches what was on screen.
+      const forceEval = evaluateForceWindow(get(qcForceHistory));
+      const mean_force = forceEval?.mean ?? null;
+      const std_force  = forceEval?.std ?? null;
+      // Persist to the device's local SQLite history; the store is only
+      // updated once the write is confirmed, so the UI reflects what's
+      // actually on disk rather than an optimistic guess.
+      api.qc.addHistory({ family, pi_code: piCode, mean_force, std_force })
+        .then(rec => qcHistory.update(h => [rec, ...h]))
+        .catch(console.error);
+      qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null }));
       return;
     }
     if (up.includes('START_QUALITY_CHECK')) {
@@ -63,6 +79,11 @@
     const m = text.match(/STATUS\s+(.+)/i);
     if (m) qcState.update(s => ({ ...s, statusMsg: m[1].trim() }));
   }
+
+  // ── QC history: load persisted records on startup ─────────────────
+  onMount(() => {
+    api.qc.history().then(d => qcHistory.set(d.records ?? [])).catch(console.error);
+  });
 
   // ── Sensor WebSocket ──────────────────────────────────────────────
   onMount(() => {

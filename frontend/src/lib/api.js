@@ -12,6 +12,7 @@ export const api = {
   klipper: {
     status:        ()            => req('GET',  '/api/klipper/status'),
     setTemp:       (temperature) => req('POST', '/api/klipper/temperature',    { temperature }),
+    zeroSensors:   ()            => req('POST', '/api/klipper/zero_sensors'),
     gcode:         (script)      => req('POST', '/api/klipper/gcode',          { script }),
     emergencyStop: ()            => req('POST', '/api/klipper/emergency_stop'),
     restart:       ()            => req('POST', '/api/klipper/restart'),
@@ -24,7 +25,9 @@ export const api = {
     get:      (family, piCode) => req('GET',  `/api/materials/${encodeURIComponent(family)}/${encodeURIComponent(piCode)}`),
   },
   qc: {
-    start: (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),
+    start:   (family, pi_code) => req('POST', '/api/qc/start', { family, pi_code }),
+    history: (limit)           => req('GET',  `/api/qc/history${limit ? `?limit=${limit}` : ''}`),
+    addHistory: (rec)          => req('POST', '/api/qc/history', rec),
   },
   system: {
     info:         ()     => req('GET',  '/api/system/info'),

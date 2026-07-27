@@ -1,14 +1,17 @@
 <script>
-  import MetricCard from '../components/MetricCard.svelte';
-  import LineChart  from '../components/LineChart.svelte';
+  import LineChart      from '../components/LineChart.svelte';
+  import QcHistoryList  from '../components/QcHistoryList.svelte';
   import { api } from '../lib/api.js';
-  import { sensorData, forceHistory } from '../lib/stores.js';
+  import { sensorData, forceHistory, qcHistory } from '../lib/stores.js';
 
   $: force    = $sensorData.extrusion_force_N;
   $: feedrate = $sensorData.measured_feedrate_mms;
   $: temp     = $sensorData.hotend_temperature;
   $: target   = $sensorData.target_temperature;
-  $: tempSub  = target !== null ? `目标 ${Number(target).toFixed(0)} °C` : null;
+  $: tempDisplay = (temp !== null && temp !== undefined && isFinite(temp)) ? Math.round(temp) : '--';
+  $: tgtDisplay  = (target !== null && target !== undefined && isFinite(target)) ? Math.round(target) : '--';
+  $: forceDisplay = (force !== null && force !== undefined && isFinite(force)) ? Number(force).toFixed(2) : '---';
+  $: feedDisplay  = (feedrate !== null && feedrate !== undefined && isFinite(feedrate)) ? Number(feedrate).toFixed(1) : '---';
 
   // Firmware enters "shutdown" after an emergency stop and stays unresponsive
   // until FIRMWARE_RESTART — same condition the App-level banner uses to show
@@ -74,44 +77,72 @@
     }
   }
 
-  // ── Emergency stop ─────────────────────────────────────────────────
-  async function estop() {
+  // ── Emergency stop (armed with a confirm step to guard against mis-taps,
+  // since it now sits far from the normal controls specifically to be
+  // deliberate rather than quick) ─────────────────────────────────────
+  let estopConfirmOpen = false;
+
+  async function confirmEstop() {
+    estopConfirmOpen = false;
     endHold();
     await api.klipper.emergencyStop().catch(console.error);
   }
 </script>
 
 <div class="layout">
-  <!-- Left: hold-to-extrude/retract, compressed live metrics, e-stop -->
-  <div class="side">
-    <div class="hold-btns">
-      <button class="act extrude" disabled={stopped}
-        on:pointerdown={() => startHold(1)}
-        on:pointerup={endHold}
-        on:pointercancel={endHold}>
-        按住挤出
-      </button>
-      <button class="act retract" disabled={stopped}
+  <!-- Top bar: live values on the left, e-stop isolated on the right -->
+  <div class="topbar">
+    <div class="tb-group">
+      <div class="tb-stat">
+        <span class="tb-stat-label">进线速度</span>
+        <span class="tb-stat-val">{feedDisplay}<span class="tb-unit">mm/s</span></span>
+      </div>
+      <div class="tb-stat">
+        <span class="tb-stat-label">挤出力</span>
+        <span class="tb-stat-val">{forceDisplay}<span class="tb-unit">N</span></span>
+      </div>
+    </div>
+
+    <button class="estop" disabled={stopped} on:click={() => (estopConfirmOpen = true)}>
+      急&nbsp;停
+    </button>
+  </div>
+
+  <div class="main">
+    <!-- Left: QC history -->
+    <div class="side">
+      <QcHistoryList records={$qcHistory} />
+    </div>
+
+    <!-- Middle: extrude/retract + temp, stacked top to bottom -->
+    <div class="controls-col">
+      <button class="dir retract" disabled={stopped}
+        aria-label="回抽"
         on:pointerdown={() => startHold(-1)}
         on:pointerup={endHold}
         on:pointercancel={endHold}>
-        按住回抽
+        <svg viewBox="0 0 24 24"><polygon points="12,5 20,17 4,17"/></svg>
+      </button>
+      <button class="dir extrude" disabled={stopped}
+        aria-label="挤出"
+        on:pointerdown={() => startHold(1)}
+        on:pointerup={endHold}
+        on:pointercancel={endHold}>
+        <svg viewBox="0 0 24 24"><polygon points="12,19 4,7 20,7"/></svg>
+      </button>
+      <button class="temp-card" on:click={openNumpad}>
+        <div class="temp-row">
+          <span class="temp-cur">{tempDisplay}</span><span class="temp-sep">/</span><span
+            class="temp-tgt">{tgtDisplay}</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="edit-hint">点击设置 ✎</div>
       </button>
     </div>
 
-    <div class="metrics">
-      <MetricCard label="挤出力"  value={force}    unit="N"    color="#f5a623" decimals={2} />
-      <MetricCard label="进线速度" value={feedrate} unit="mm/s" color="#5b8dee" decimals={1} />
-      <MetricCard label="热端温度" value={temp}     unit="°C"   color="#f97316" decimals={1}
-        secondary={tempSub} clickable on:click={openNumpad} />
+    <!-- Right: live force sparkline -->
+    <div class="chart">
+      <LineChart data={$forceHistory} color="#f5a623" title="挤出力历史" unit="N" />
     </div>
-
-    <button class="act estop" disabled={stopped} on:click={estop}>急&nbsp;停</button>
-  </div>
-
-  <!-- Right: live force sparkline -->
-  <div class="chart">
-    <LineChart data={$forceHistory} color="#f5a623" title="挤出力历史" unit="N" />
   </div>
 
   <!-- Numpad overlay -->
@@ -135,6 +166,22 @@
       </div>
     </div>
   {/if}
+
+  <!-- E-stop confirm overlay -->
+  {#if estopConfirmOpen}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="overlay" on:click|self={() => (estopConfirmOpen = false)}>
+      <div class="confirm-box">
+        <div class="confirm-title">确认急停？</div>
+        <div class="confirm-sub">当前挤出/回抽动作将立即停止</div>
+        <div class="confirm-actions">
+          <button class="confirm-cancel" on:click={() => (estopConfirmOpen = false)}>取消</button>
+          <button class="confirm-go" on:click={confirmEstop}>确认急停</button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -143,9 +190,75 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top bar: live values on the left, e-stop pinned right ── */
+  .topbar {
+    flex-shrink: 0;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px;
+    border-bottom: 1px solid #252d48;
+  }
+  .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tb-stat, .estop {
+    height: 32px;
+    border-radius: 16px;
+    font-family: system-ui, sans-serif;
+  }
+
+  .tb-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    background: #1a1f35;
+    border: 1px solid #2e3a58;
+  }
+  .tb-stat-label {
+    font-size: 16px;
+    letter-spacing: .06em;
+    color: #7888b0;
+  }
+  .tb-stat-val {
+    font-size: 16px;
+    color: #eef2ff;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .tb-unit { font-size: 16px; color: #7888b0; margin-left: 2px; }
+
+  .estop {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 0 18px;
+    background: #22100e;
+    border: 1px solid #e5484d;
+    color: #e5484d;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    cursor: pointer;
+    transition: opacity .1s, background .12s;
+  }
+  .estop:active:not(:disabled) { background: #e5484d; color: #fff; }
+  .estop:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* ── Main: three columns — QC history / controls / force chart ── */
+  .main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
   }
   .side {
-    width: 258px;
+    width: 270px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -157,61 +270,72 @@
     padding: 4px 4px 4px 0;
   }
 
-  /* ── Hold-to-extrude / retract ── */
-  .hold-btns {
+  /* ── Middle column: retract / extrude / temp, stacked ── */
+  .controls-col {
+    width: 160px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #252d48;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 16px 0;
+    border-right: 1px solid #252d48;
   }
-
-  /* ── Compressed metric cards ── */
-  .metrics {
-    flex: 1;
-    min-height: 0;
+  .dir {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: #232a48;
+    border: 2px solid;
     display: flex;
-    flex-direction: column;
-  }
-  .metrics :global(.card) { padding: 6px 18px; }
-  .metrics :global(.card .num) { font-size: 34px; }
-  .metrics :global(.card .secondary) { font-size: 13px; }
-  .metrics :global(.card:last-child) { border-bottom: none; }
-
-  /* ── Action buttons (extrude / retract / estop) ── */
-  .act {
-    width: 100%;
-    height: 40px;
-    border-radius: 2px;
-    font-size: 15px;
-    font-weight: 600;
-    font-family: system-ui, sans-serif;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: opacity .1s, background .12s;
-    border: 1px solid;
-    border-radius: 0;
+    transition: background .12s, opacity .1s;
   }
-  .act:active   { opacity: .68; }
-  .act:disabled { opacity: .35; cursor: not-allowed; }
+  .dir svg { width: 34px; height: 34px; fill: currentColor; }
+  .dir:active:not(:disabled) { opacity: .7; }
+  .dir:disabled { opacity: .3; cursor: not-allowed; }
+  .dir.retract { border-color: #5b8dee; color: #5b8dee; }
+  .dir.retract:active:not(:disabled) { background: #1a2442; }
+  .dir.extrude { border-color: #26bf6e; color: #26bf6e; }
+  .dir.extrude:active:not(:disabled) { background: #1a3a28; }
 
-  .extrude { background: #0e2218; border-color: #26bf6e55; color: #26bf6e; }
-  .extrude:active:not(:disabled) { background: #1a3a28; }
-
-  .retract { background: #0e1528; border-color: #5b8dee55; color: #5b8dee; border-top: none; }
-  .retract:active:not(:disabled) { background: #1a2442; }
-
-  .estop {
-    flex-shrink: 0;
-    height: 46px;
-    background: #22100e;
-    border-color: #e5484d;
-    color: #e5484d;
-    font-size: 17px;
-    letter-spacing: .08em;
-    border-top: 1px solid #252d48;
+  .temp-card {
+    width: 132px;
+    background: #1a1f35;
+    border: 2px solid #f97316;
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px #f973161f, 0 2px 10px #f9731633;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: background .12s, box-shadow .12s;
   }
-  .estop:active:not(:disabled) { background: #e5484d !important; color: #fff; opacity: 1 !important; }
+  .temp-card:active {
+    background: #232a48;
+    box-shadow: 0 0 0 3px #f9731633, 0 2px 10px #f9731655;
+  }
+  .temp-row {
+    line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .temp-cur { font-size: 26px; font-weight: 700; color: #f97316; text-shadow: 0 0 20px #f973164d; }
+  .temp-sep { font-size: 20px; color: #5a6380; margin: 0 2px; }
+  .temp-tgt { font-size: 20px; color: #9aa8cc; }
+  .temp-unit { font-size: 13px; color: #7888b0; margin-left: 3px; }
+  .edit-hint {
+    font-size: 11px;
+    color: #f5a623;
+    font-family: system-ui, sans-serif;
+    letter-spacing: .02em;
+  }
 
-  /* ── Numpad overlay ── */
+  /* ── Numpad / confirm overlay ── */
   .overlay {
     position: absolute;
     inset: 0;
@@ -272,4 +396,54 @@
     font-size: 20px;
   }
   .np-confirm:active { background: #1a3a28; }
+
+  /* ── E-stop confirm ── */
+  .confirm-box {
+    background: #151b2e;
+    border: 1px solid #e5484d;
+    border-radius: 4px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 300px;
+  }
+  .confirm-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e5484d;
+    font-family: system-ui, sans-serif;
+  }
+  .confirm-sub {
+    font-size: 13px;
+    color: #9aa8cc;
+    font-family: system-ui, sans-serif;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .confirm-cancel, .confirm-go {
+    flex: 1;
+    height: 46px;
+    border-radius: 2px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: system-ui, sans-serif;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .confirm-cancel {
+    background: #1a1f35;
+    border: 1px solid #2e3a58;
+    color: #eef2ff;
+  }
+  .confirm-cancel:active { background: #232a48; }
+  .confirm-go {
+    background: #22100e;
+    border: 1px solid #e5484d;
+    color: #e5484d;
+  }
+  .confirm-go:active { background: #e5484d; color: #fff; }
 </style>

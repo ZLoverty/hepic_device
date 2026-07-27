@@ -26,9 +26,15 @@ export const qcState = writable({
   piCode:   /** @type {string|null} */ (null),
   material: /** @type {object|null} */ (null),
   extrudeStartedAt: /** @type {number|null} */ (null),  // Date.now() when extrusion begins
-  frozenForce: /** @type {number|null} */ (null),  // force snapshot at STOP_QUALITY_CHECK; held until "完成"
 });
 
 /** Force readings accumulated during the current QC session. */
 export const qcForceHistory = writable(/** @type {number[]} */([]));
+
+/**
+ * Completed QC runs, newest first. Backed by the device's local
+ * `/api/qc/history` (SQLite, via the shared HEPiC.database.QcHistoryStore) —
+ * fetched on startup in App.svelte and appended to as runs finish.
+ */
+export const qcHistory = writable(/** @type {{id:number, timestamp:string, family:string|null, pi_code:string|null, mean_force:number|null, std_force:number|null}[]} */([]));
 
