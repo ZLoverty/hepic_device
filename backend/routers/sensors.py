@@ -17,5 +17,10 @@ async def sensor_stream(websocket: WebSocket):
             await websocket.send_text(payload)
     except (WebSocketDisconnect, asyncio.TimeoutError, asyncio.CancelledError):
         pass
+    except Exception:
+        # Client dropped the connection at the transport level (e.g. network
+        # loss) before Starlette raised WebSocketDisconnect; the underlying
+        # write then fails with a non-WebSocketDisconnect error.
+        pass
     finally:
         broadcaster.unsubscribe(q)
