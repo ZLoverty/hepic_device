@@ -64,3 +64,9 @@ async def emergency_stop(request: Request):
 async def restart_firmware(request: Request):
     await _state(request).klipper.restart_firmware()
     return {"ok": True}
+
+
+@router.post("/abort_and_recover")
+async def abort_and_recover(request: Request):
+    await _state(request).klipper.abort_and_recover()
+    return {"ok": True}

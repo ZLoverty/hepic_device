@@ -16,6 +16,7 @@ export const api = {
     gcode:         (script)      => req('POST', '/api/klipper/gcode',          { script }),
     emergencyStop: ()            => req('POST', '/api/klipper/emergency_stop'),
     restart:       ()            => req('POST', '/api/klipper/restart'),
+    abortAndRecover: ()          => req('POST', '/api/klipper/abort_and_recover'),
   },
   materials: {
     families: ()               => req('GET',  '/api/materials/'),

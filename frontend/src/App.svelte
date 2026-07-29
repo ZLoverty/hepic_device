@@ -70,6 +70,11 @@
         .then(rec => qcHistory.update(h => [rec, ...h]))
         .catch(console.error);
       qcState.update(s => ({ ...s, phase: 'done', statusMsg: '质检完毕', extrudeStartedAt: null }));
+      // The gcode script has no cancel/pause mechanism, so even a normal
+      // finish is recovered the same way a mid-run abort is (see PC's
+      // on_quality_check_clicked(), which routes both through the same
+      // abort_and_recover()): emergency stop then firmware restart.
+      api.klipper.abortAndRecover().catch(console.error);
       return;
     }
     if (up.includes('START_QUALITY_CHECK')) {

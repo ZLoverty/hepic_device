@@ -61,6 +61,17 @@ class DeviceKlipperWorker:
     async def restart_firmware(self):
         await self.send_gcode("FIRMWARE_RESTART")
 
+    async def abort_and_recover(self):
+        """Emergency-stop then firmware-restart, mirroring the PC app's
+        KlipperWorker.abort_and_recover(). One-shot gcode scripts (e.g. quality
+        check) have no cancel/pause mechanism, so stopping one mid-run — or
+        recovering once it finishes on its own — always needs the queue cleared
+        via emergency stop, then a firmware restart to bring Klipper back to
+        "ready".
+        """
+        await self.emergency_stop()
+        await self.restart_firmware()
+
     def subscribe_responses(self) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(maxsize=100)
         self._response_queues.append(q)

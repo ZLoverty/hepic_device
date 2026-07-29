@@ -87,6 +87,17 @@
     endHold();
     await api.klipper.emergencyStop().catch(console.error);
   }
+
+  // ── Sensor zero ──────────────────────────────────────────────────
+  let zeroing = false;
+
+  async function zeroSensors() {
+    if (zeroing || stopped) return;
+    zeroing = true;
+    try   { await api.klipper.zeroSensors(); }
+    catch (e) { console.error(e); }
+    finally { zeroing = false; }
+  }
 </script>
 
 <div class="layout">
@@ -102,6 +113,10 @@
         <span class="tb-stat-val">{forceDisplay}<span class="tb-unit">N</span></span>
       </div>
     </div>
+
+    <button class="zero-btn" disabled={stopped || zeroing} on:click={zeroSensors}>
+      {zeroing ? '清零中…' : '传感器清零'}
+    </button>
 
     <button class="estop" disabled={stopped} on:click={() => (estopConfirmOpen = true)}>
       急&nbsp;停
@@ -135,7 +150,6 @@
           <span class="temp-cur">{tempDisplay}</span><span class="temp-sep">/</span><span
             class="temp-tgt">{tgtDisplay}</span><span class="temp-unit">°C</span>
         </div>
-        <div class="edit-hint">点击设置 ✎</div>
       </button>
     </div>
 
@@ -235,8 +249,26 @@
   }
   .tb-unit { font-size: 16px; color: #7888b0; margin-left: 2px; }
 
-  .estop {
+  .zero-btn {
     margin-left: auto;
+    flex-shrink: 0;
+    height: 32px;
+    border-radius: 16px;
+    padding: 0 16px;
+    background: #101a30;
+    border: 1px solid #2e3a58;
+    color: #9aa8cc;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    cursor: pointer;
+    transition: opacity .1s, background .12s;
+  }
+  .zero-btn:active:not(:disabled) { background: #1a2442; color: #eef2ff; }
+  .zero-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  .estop {
     flex-shrink: 0;
     padding: 0 18px;
     background: #22100e;

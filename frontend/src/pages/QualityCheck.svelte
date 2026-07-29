@@ -123,7 +123,7 @@
     clearInterval(extrudeTimer);
     extrudeTimer = null;
     qcState.update(s => ({ ...s, phase: 'idle', statusMsg: '', extrudeStartedAt: null }));
-    await api.klipper.emergencyStop().catch(console.error);
+    await api.klipper.abortAndRecover().catch(console.error);
   }
 
   function finish() {

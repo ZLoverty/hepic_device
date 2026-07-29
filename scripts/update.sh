@@ -24,9 +24,17 @@ fi
 touch "$RUNNING_FILE"
 trap 'rm -f "$RUNNING_FILE"' EXIT
 
+RELEASE_BRANCH="main"
+
 echo "===== update started $(date -Iseconds) ====="
 cd "$REPO_ROOT"
-git pull --ff-only
+git fetch origin "$RELEASE_BRANCH"
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$current_branch" != "$RELEASE_BRANCH" ]; then
+  echo "on branch '$current_branch', switching to '$RELEASE_BRANCH' before updating"
+  git checkout "$RELEASE_BRANCH"
+fi
+git pull --ff-only origin "$RELEASE_BRANCH"
 ./install.sh
 sudo systemctl restart hepic-device-backend.service hepic-device-kiosk.service
 echo "===== update finished $(date -Iseconds) ====="
