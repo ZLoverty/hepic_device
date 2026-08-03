@@ -17,6 +17,7 @@
   $: fMax       = $qcState.material?.force_range?.[1] ?? null;
   $: liveTemp   = $sensorData.hotend_temperature;
   $: liveFeed   = $sensorData.feedrate_mms;
+  $: klipperReady = $sensorData.klippy_state === 'ready';
 
   $: forceColor = (() => {
     if (curForce === null || !isFinite(curForce) || fMin === null) return '#f5a623';
@@ -113,7 +114,7 @@
 
   // ── QC session actions ────────────────────────────────────────────
   async function startQC() {
-    if (!$qcState.family || !$qcState.piCode) return;
+    if (!$qcState.family || !$qcState.piCode || !klipperReady) return;
     qcForceHistory.set([]);
     qcState.update(s => ({ ...s, phase: 'running', statusMsg: '正在启动...', extrudeStartedAt: null }));
     await api.qc.start($qcState.family, $qcState.piCode).catch(console.error);
@@ -192,7 +193,9 @@
           </div>
         {/if}
       </div>
-      <button class="start-btn" on:click={startQC}>开始质检</button>
+      <button class="start-btn" disabled={!klipperReady} on:click={startQC}>
+        {klipperReady ? '开始质检' : 'Klipper 未就绪'}
+      </button>
     {:else if $qcState.piCode}
       <span class="muted">无法获取材料信息</span>
     {:else}
@@ -311,7 +314,8 @@
     font-family: system-ui, sans-serif; letter-spacing: .04em;
     border-radius: 2px; cursor: pointer; transition: background .12s;
   }
-  .start-btn:active { background: #26bf6e; color: #141824; }
+  .start-btn:active:not(:disabled) { background: #26bf6e; color: #141824; }
+  .start-btn:disabled { opacity: .35; cursor: not-allowed; }
 
   /* ── Running / Done ──────────────────────────────────────── */
   .running { width: 100%; height: 100%; display: flex; }
