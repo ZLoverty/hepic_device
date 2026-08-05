@@ -54,7 +54,7 @@
 
   function confirmTemp() {
     const v = parseInt(numpadInput, 10);
-    if (!isNaN(v) && v >= 20 && v <= 320) {
+    if (!isNaN(v) && v >= 0 && v <= 360) {
       api.klipper.setTemp(v).catch(console.error);
     }
     numpadOpen = false;

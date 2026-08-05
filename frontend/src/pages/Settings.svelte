@@ -120,50 +120,47 @@
     <button class="refresh" on:click={checkKlipper}>刷新</button>
   </div>
 
-  <div class="section" style="margin-top:20px">材料数据库</div>
-  <div class="update-box">
-    <div class="row" style="border:none; padding:0; height:auto;">
-      <span class="name">当前版本 · <span class="mono">{materialDbVersion}</span></span>
-      <button
-        class="refresh"
-        on:click={syncMaterials}
-        disabled={materialSyncState === 'syncing'}
-      >
-        {materialSyncState === 'syncing' ? '同步中…' : '同步材料库'}
-      </button>
-    </div>
-    {#if materialSyncState === 'done'}
-      <div class="update-msg ok">{materialSyncMsg}</div>
-    {:else if materialSyncState === 'error'}
-      <div class="update-msg bad">同步失败：{materialSyncMsg}</div>
-    {/if}
-  </div>
-
-  <div class="section" style="margin-top:20px">系统更新</div>
-  <div class="update-box">
-    <div class="row" style="border:none; padding:0; height:auto;">
-      <span class="name">拉取最新代码、重新安装并重启服务</span>
-      <button
-        class="refresh"
-        on:click={startUpdate}
-        disabled={updateState === 'running'}
-      >
-        {updateState === 'running' ? '更新中…' : '检查并更新'}
-      </button>
-    </div>
-    {#if updateState === 'done'}
-      <div class="update-msg ok">更新完成</div>
-    {:else if updateState === 'error'}
-      <div class="update-msg bad">更新失败，请查看下方日志</div>
-    {/if}
-    {#if updateState !== 'idle'}
-      <pre class="update-log">{updateLog.join('\n') || '等待日志…'}</pre>
-    {/if}
-  </div>
-
   <div class="section" style="margin-top:20px">关于</div>
   <div class="info">
-    <div class="info-row"><span>版本</span><span class="mono">{appVersion}</span></div>
+    <div class="info-group">
+      <div class="info-row">
+        <span>材料数据库 <span class="mono">{materialDbVersion}</span></span>
+        <button
+          class="refresh"
+          on:click={syncMaterials}
+          disabled={materialSyncState === 'syncing'}
+        >
+          {materialSyncState === 'syncing' ? '同步中…' : '同步材料库'}
+        </button>
+      </div>
+      {#if materialSyncState === 'done'}
+        <div class="update-msg ok">{materialSyncMsg}</div>
+      {:else if materialSyncState === 'error'}
+        <div class="update-msg bad">同步失败：{materialSyncMsg}</div>
+      {/if}
+    </div>
+
+    <div class="info-group">
+      <div class="info-row">
+        <span>系统版本 <span class="mono">{appVersion}</span></span>
+        <button
+          class="refresh"
+          on:click={startUpdate}
+          disabled={updateState === 'running'}
+        >
+          {updateState === 'running' ? '更新中…' : '检查并更新'}
+        </button>
+      </div>
+      {#if updateState === 'done'}
+        <div class="update-msg ok">更新完成</div>
+      {:else if updateState === 'error'}
+        <div class="update-msg bad">更新失败，请查看下方日志</div>
+      {/if}
+      {#if updateState !== 'idle'}
+        <pre class="update-log">{updateLog.join('\n') || '等待日志…'}</pre>
+      {/if}
+    </div>
+
     <div class="info-row"><span>系统</span><span class="mono">{systemName}</span></div>
     <div class="info-row"><span>后端</span><span class="mono">FastAPI + Klipper</span></div>
     <div class="info-row"><span>WiFi IP 地址</span><span class="mono">{ipAddress}</span></div>
@@ -268,4 +265,10 @@
   }
   .info-row:last-child { border-bottom: none; }
   .mono { color: #dce4f5; font-family: 'Courier New', Courier, monospace; }
+
+  .info-group { border-bottom: 1px solid #1a1e30; padding-bottom: 8px; }
+  .info-group .info-row { border-bottom: none; padding-bottom: 4px; }
+  .info-group:last-child { border-bottom: none; }
+  .info-group .update-msg { padding-bottom: 6px; }
+  .info-group .update-log { margin-bottom: 6px; }
 </style>
