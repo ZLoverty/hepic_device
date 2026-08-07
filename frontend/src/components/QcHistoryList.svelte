@@ -81,11 +81,17 @@
   .rows {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d0d5e0 transparent;
   }
+  .rows::-webkit-scrollbar { width: 8px; height: 8px; }
+  .rows::-webkit-scrollbar-track { background: transparent; }
+  .rows::-webkit-scrollbar-thumb { background: #d0d5e0; border-radius: 4px; }
   .date-header {
     position: sticky;
     top: 0;
+    left: 0;
     padding: 8px 18px;
     background: #eceef3;
     color: #2f6fed;
@@ -94,19 +100,23 @@
     letter-spacing: .04em;
     font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     border-bottom: 1px solid #e2e5ec;
+    width: max-content;
+    min-width: 100%;
   }
   .row {
     display: grid;
-    grid-template-columns: 64px 1fr auto;
+    grid-template-columns: 64px auto auto;
     align-items: baseline;
     gap: 10px;
     padding: 12px 18px;
     border-bottom: 1px solid #e2e5ec;
     font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     white-space: nowrap;
+    width: max-content;
+    min-width: 100%;
   }
   .row:last-child { border-bottom: none; }
   .time  { color: #667085; font-size: 20px; flex-shrink: 0; }
-  .force { color: #14161d; font-size: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .code  { color: #2f6fed; font-size: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .force { color: #14161d; font-size: 20px; }
+  .code  { color: #2f6fed; font-size: 20px; }
 </style>
