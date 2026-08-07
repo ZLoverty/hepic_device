@@ -12,7 +12,7 @@ dependencies = [
     "uvicorn[standard]>=0.29",
     "pyyaml",
     "numpy",
-    "HEPiC @ git+https://github.com/ZLoverty/HEPiC.git@master",
+    "HEPiC>=1.6.1",
 ]
 
 [project.scripts]

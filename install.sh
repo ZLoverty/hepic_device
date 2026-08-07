@@ -26,6 +26,17 @@ if [ ! -d "$REPO_ROOT/.venv" ]; then
   python3 -m venv "$REPO_ROOT/.venv"
 fi
 "$REPO_ROOT/.venv/bin/pip" install --index-url "$PIP_INDEX_URL" --upgrade pip
+
+# pyproject.toml lists a plain "HEPiC>=..." (no VCS URL) so that pip never
+# tries to `git clone` github.com itself -- fetch and install it from the
+# COS-mirrored source archive first, so it's already satisfied by the time
+# `pip install -e .` below resolves hepic-device's own dependencies.
+HEPIC_TMP="$(mktemp -d)"
+trap 'rm -rf "$HEPIC_TMP"' EXIT
+"$REPO_ROOT/scripts/fetch_hepic.sh" "${HEPIC_TAG:-latest}" "$HEPIC_TMP"
+HEPIC_SRC="$(find "$HEPIC_TMP" -mindepth 1 -maxdepth 1 -type d)"
+"$REPO_ROOT/.venv/bin/pip" install --index-url "$PIP_INDEX_URL" "$HEPIC_SRC"
+
 "$REPO_ROOT/.venv/bin/pip" install --index-url "$PIP_INDEX_URL" -e "$REPO_ROOT"
 
 echo "==> [2/3] Fetching frontend build ($TAG)"
