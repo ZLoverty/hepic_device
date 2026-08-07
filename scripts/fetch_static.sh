@@ -15,7 +15,7 @@ set -euo pipefail
 
 REPO="ZLoverty/hepic_device"
 TAG="${1:-latest}"
-COS_DOMAIN="${HEPIC_COS_DOMAIN:-https://REPLACE-WITH-YOUR-BUCKET.cos.REPLACE-REGION.myqcloud.com}"
+COS_DOMAIN="https://hepic-device-1456772252.cos.ap-guangzhou.myqcloud.com"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"

@@ -155,7 +155,7 @@
 
     <!-- Right: live force sparkline -->
     <div class="chart">
-      <LineChart data={$forceHistory} color="#f5a623" title="挤出力历史" unit="N" />
+      <LineChart data={$forceHistory} color="#d97706" title="挤出力历史" unit="N" />
     </div>
   </div>
 
@@ -210,12 +210,12 @@
   /* ── Top bar: live values on the left, e-stop pinned right ── */
   .topbar {
     flex-shrink: 0;
-    height: 46px;
+    height: 56px;
     display: flex;
     align-items: center;
     gap: 14px;
     padding: 0 14px;
-    border-bottom: 1px solid #252d48;
+    border-bottom: 1px solid #e2e5ec;
   }
   .tb-group {
     display: flex;
@@ -224,8 +224,8 @@
   }
 
   .tb-stat, .estop {
-    height: 32px;
-    border-radius: 16px;
+    height: 40px;
+    border-radius: 20px;
     font-family: system-ui, sans-serif;
   }
 
@@ -233,54 +233,54 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 0 12px;
-    background: #1a1f35;
-    border: 1px solid #2e3a58;
+    padding: 0 14px;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
   }
   .tb-stat-label {
-    font-size: 16px;
+    font-size: 20px;
     letter-spacing: .06em;
-    color: #7888b0;
+    color: #667085;
   }
   .tb-stat-val {
-    font-size: 16px;
-    color: #eef2ff;
-    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+    color: #14161d;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
   }
-  .tb-unit { font-size: 16px; color: #7888b0; margin-left: 2px; }
+  .tb-unit { font-size: 20px; color: #667085; margin-left: 2px; }
 
   .zero-btn {
     margin-left: auto;
     flex-shrink: 0;
-    height: 32px;
-    border-radius: 16px;
-    padding: 0 16px;
-    background: #101a30;
-    border: 1px solid #2e3a58;
-    color: #9aa8cc;
+    height: 40px;
+    border-radius: 20px;
+    padding: 0 18px;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
+    color: #4b5568;
     font-family: system-ui, sans-serif;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 600;
     letter-spacing: .02em;
     cursor: pointer;
     transition: opacity .1s, background .12s;
   }
-  .zero-btn:active:not(:disabled) { background: #1a2442; color: #eef2ff; }
+  .zero-btn:active:not(:disabled) { background: #eceef3; color: #14161d; }
   .zero-btn:disabled { opacity: .35; cursor: not-allowed; }
 
   .estop {
     flex-shrink: 0;
-    padding: 0 18px;
-    background: #22100e;
-    border: 1px solid #e5484d;
-    color: #e5484d;
-    font-size: 14px;
+    padding: 0 20px;
+    background: #fdecec;
+    border: 1px solid #dc2f35;
+    color: #dc2f35;
+    font-size: 20px;
     font-weight: 600;
     letter-spacing: .08em;
     cursor: pointer;
     transition: opacity .1s, background .12s;
   }
-  .estop:active:not(:disabled) { background: #e5484d; color: #fff; }
+  .estop:active:not(:disabled) { background: #dc2f35; color: #fff; }
   .estop:disabled { opacity: .35; cursor: not-allowed; }
 
   /* ── Main: three columns — QC history / controls / force chart ── */
@@ -294,7 +294,7 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #252d48;
+    border-right: 1px solid #e2e5ec;
   }
   .chart {
     flex: 1;
@@ -312,13 +312,13 @@
     justify-content: center;
     gap: 22px;
     padding: 16px 0;
-    border-right: 1px solid #252d48;
+    border-right: 1px solid #e2e5ec;
   }
   .dir {
     width: 84px;
     height: 84px;
     border-radius: 50%;
-    background: #232a48;
+    background: #f5f6f9;
     border: 2px solid;
     display: flex;
     align-items: center;
@@ -329,17 +329,17 @@
   .dir svg { width: 34px; height: 34px; fill: currentColor; }
   .dir:active:not(:disabled) { opacity: .7; }
   .dir:disabled { opacity: .3; cursor: not-allowed; }
-  .dir.retract { border-color: #5b8dee; color: #5b8dee; }
-  .dir.retract:active:not(:disabled) { background: #1a2442; }
-  .dir.extrude { border-color: #26bf6e; color: #26bf6e; }
-  .dir.extrude:active:not(:disabled) { background: #1a3a28; }
+  .dir.retract { border-color: #2f6fed; color: #2f6fed; }
+  .dir.retract:active:not(:disabled) { background: #eaf1fe; }
+  .dir.extrude { border-color: #15a862; color: #15a862; }
+  .dir.extrude:active:not(:disabled) { background: #eafaf1; }
 
   .temp-card {
     width: 132px;
-    background: #1a1f35;
-    border: 2px solid #f97316;
+    background: #ffffff;
+    border: 2px solid #ea580c;
     border-radius: 6px;
-    box-shadow: 0 0 0 3px #f973161f, 0 2px 10px #f9731633;
+    box-shadow: 0 0 0 3px #ea580c1f, 0 2px 10px #ea580c26;
     padding: 8px 10px;
     display: flex;
     flex-direction: column;
@@ -349,20 +349,20 @@
     transition: background .12s, box-shadow .12s;
   }
   .temp-card:active {
-    background: #232a48;
-    box-shadow: 0 0 0 3px #f9731633, 0 2px 10px #f9731655;
+    background: #fff3ea;
+    box-shadow: 0 0 0 3px #ea580c33, 0 2px 10px #ea580c40;
   }
   .temp-row {
     line-height: 1;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
   }
-  .temp-cur { font-size: 26px; font-weight: 700; color: #f97316; text-shadow: 0 0 20px #f973164d; }
-  .temp-sep { font-size: 20px; color: #5a6380; margin: 0 2px; }
-  .temp-tgt { font-size: 20px; color: #9aa8cc; }
-  .temp-unit { font-size: 13px; color: #7888b0; margin-left: 3px; }
+  .temp-cur { font-size: 26px; font-weight: 700; color: #ea580c; }
+  .temp-sep { font-size: 20px; color: #98a2b3; margin: 0 2px; }
+  .temp-tgt { font-size: 20px; color: #667085; }
+  .temp-unit { font-size: 20px; color: #667085; margin-left: 3px; }
   .edit-hint {
-    font-size: 11px;
-    color: #f5a623;
+    font-size: 20px;
+    color: #d97706;
     font-family: system-ui, sans-serif;
     letter-spacing: .02em;
   }
@@ -371,16 +371,17 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(7, 9, 16, .72);
+    background: rgba(15, 23, 42, .45);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
   }
   .numpad {
-    background: #151b2e;
-    border: 1px solid #252d48;
+    background: #ffffff;
+    border: 1px solid #e2e5ec;
     border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .18);
     padding: 18px;
     display: flex;
     flex-direction: column;
@@ -388,19 +389,19 @@
     width: 290px;
   }
   .np-display {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     font-size: 52px;
     font-weight: 700;
-    color: #eef2ff;
+    color: #14161d;
     text-align: right;
     padding: 0 6px;
     line-height: 1;
-    border-bottom: 1px solid #252d48;
+    border-bottom: 1px solid #e2e5ec;
     padding-bottom: 12px;
   }
   .np-unit {
-    font-size: 16px;
-    color: #5a6380;
+    font-size: 20px;
+    color: #98a2b3;
     margin-left: 4px;
   }
   .np-grid {
@@ -410,30 +411,31 @@
   }
   .np-key {
     height: 56px;
-    background: #1a1f35;
-    border: 1px solid #252d48;
-    color: #eef2ff;
-    font-size: 22px;
-    font-family: 'Courier New', Courier, monospace;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
+    color: #14161d;
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     border-radius: 2px;
     cursor: pointer;
     transition: background .1s;
   }
-  .np-key:active  { background: #252d48; }
-  .np-back  { color: #e5484d; font-size: 18px; }
+  .np-key:active  { background: #eceef3; }
+  .np-back  { color: #dc2f35; font-size: 20px; }
   .np-confirm {
-    background: #0e2218;
-    border-color: #26bf6e55;
-    color: #26bf6e;
+    background: #eafaf1;
+    border-color: #15a86255;
+    color: #15a862;
     font-size: 20px;
   }
-  .np-confirm:active { background: #1a3a28; }
+  .np-confirm:active { background: #c9f2da; }
 
   /* ── E-stop confirm ── */
   .confirm-box {
-    background: #151b2e;
-    border: 1px solid #e5484d;
+    background: #ffffff;
+    border: 1px solid #dc2f35;
     border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .18);
     padding: 22px;
     display: flex;
     flex-direction: column;
@@ -443,12 +445,12 @@
   .confirm-title {
     font-size: 20px;
     font-weight: 700;
-    color: #e5484d;
+    color: #dc2f35;
     font-family: system-ui, sans-serif;
   }
   .confirm-sub {
-    font-size: 13px;
-    color: #9aa8cc;
+    font-size: 20px;
+    color: #667085;
     font-family: system-ui, sans-serif;
   }
   .confirm-actions {
@@ -458,24 +460,24 @@
   }
   .confirm-cancel, .confirm-go {
     flex: 1;
-    height: 46px;
+    height: 52px;
     border-radius: 2px;
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 600;
     font-family: system-ui, sans-serif;
     cursor: pointer;
     transition: background .12s;
   }
   .confirm-cancel {
-    background: #1a1f35;
-    border: 1px solid #2e3a58;
-    color: #eef2ff;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
+    color: #14161d;
   }
-  .confirm-cancel:active { background: #232a48; }
+  .confirm-cancel:active { background: #eceef3; }
   .confirm-go {
-    background: #22100e;
-    border: 1px solid #e5484d;
-    color: #e5484d;
+    background: #fdecec;
+    border: 1px solid #dc2f35;
+    color: #dc2f35;
   }
-  .confirm-go:active { background: #e5484d; color: #fff; }
+  .confirm-go:active { background: #dc2f35; color: #fff; }
 </style>

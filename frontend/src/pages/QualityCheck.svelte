@@ -20,9 +20,9 @@
   $: klipperReady = $sensorData.klippy_state === 'ready';
 
   $: forceColor = (() => {
-    if (curForce === null || !isFinite(curForce) || fMin === null) return '#f5a623';
-    if (curForce < fMin || curForce > fMax) return '#e5484d';
-    return '#26bf6e';
+    if (curForce === null || !isFinite(curForce) || fMin === null) return '#d97706';
+    if (curForce < fMin || curForce > fMax) return '#dc2f35';
+    return '#15a862';
   })();
 
   // ── Progress tracking ─────────────────────────────────────────────
@@ -233,7 +233,7 @@
     <div class="force-block">
       <div class="force-main">
         <div class="force-label">挤出力</div>
-        <div class="force-num" style="color:{forceColor}; text-shadow:0 0 32px {forceColor}55">
+        <div class="force-num" style="color:{forceColor}">
           {curForce !== null && isFinite(curForce) ? Number(curForce).toFixed(2) : '---'}
         </div>
       </div>
@@ -274,107 +274,107 @@
     flex: 1.15; padding: 14px 16px;
     display: flex; flex-direction: column; gap: 10px;
   }
-  .divv { width: 1px; background: #252d48; margin: 12px 0; }
+  .divv { width: 1px; background: #e2e5ec; margin: 12px 0; }
   .col-title {
-    font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
-    color: #7888b0; font-family: system-ui, sans-serif;
+    font-size: 20px; letter-spacing: .12em; text-transform: uppercase;
+    color: #667085; font-family: system-ui, sans-serif;
   }
   .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
-    height: 52px; min-width: 72px; padding: 0 14px;
-    background: #1a1f35; border: 1px solid #252d48;
-    color: #eef2ff; font-size: 14px;
-    font-family: 'Courier New', Courier, monospace;
+    height: 52px; min-width: 84px; padding: 0 14px;
+    background: #f5f6f9; border: 1px solid #e2e5ec;
+    color: #14161d; font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     border-radius: 2px; cursor: pointer;
     transition: background .1s, border-color .1s, color .1s;
   }
-  .chip:active { background: #252d48; }
-  .chip.sel { background: #0f1a38; border-color: #7aa5f4; color: #7aa5f4; }
-  .muted { color: #5a6888; font-size: 14px; font-family: system-ui, sans-serif; }
+  .chip:active { background: #eceef3; }
+  .chip.sel { background: #eaf1fe; border-color: #2f6fed; color: #2f6fed; }
+  .muted { color: #667085; font-size: 20px; font-family: system-ui, sans-serif; }
 
   .mat-card {
-    background: #131828; border: 1px solid #252d48;
+    background: #f5f6f9; border: 1px solid #e2e5ec;
     padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
   }
   .mat-row {
     display: flex; justify-content: space-between;
-    align-items: baseline; font-size: 14px;
+    align-items: baseline; font-size: 20px;
   }
-  .mk { color: #7888b0; font-family: system-ui, sans-serif; }
-  .mv { color: #eef2ff; font-family: system-ui, sans-serif; }
-  .mono   { font-family: 'Courier New', Courier, monospace !important; }
-  .orange { color: #f97316 !important; }
-  .blue   { color: #7aa5f4  !important; }
-  .amber  { color: #f5a623  !important; }
+  .mk { color: #667085; font-family: system-ui, sans-serif; }
+  .mv { color: #14161d; font-family: system-ui, sans-serif; }
+  .mono   { font-family: Arial, Helvetica, sans-serif !important; font-variant-numeric: tabular-nums; }
+  .orange { color: #ea580c !important; }
+  .blue   { color: #2f6fed !important; }
+  .amber  { color: #d97706 !important; }
 
   .start-btn {
     margin-top: auto; height: 60px;
-    background: #0b2016; border: 1px solid #26bf6e;
-    color: #26bf6e; font-size: 20px; font-weight: 600;
+    background: #eafaf1; border: 1px solid #15a862;
+    color: #15a862; font-size: 20px; font-weight: 600;
     font-family: system-ui, sans-serif; letter-spacing: .04em;
     border-radius: 2px; cursor: pointer; transition: background .12s;
   }
-  .start-btn:active:not(:disabled) { background: #26bf6e; color: #141824; }
+  .start-btn:active:not(:disabled) { background: #15a862; color: #fff; }
   .start-btn:disabled { opacity: .35; cursor: not-allowed; }
 
   /* ── Running / Done ──────────────────────────────────────── */
   .running { width: 100%; height: 100%; display: flex; }
   .force-col {
     width: 272px; flex-shrink: 0;
-    border-right: 1px solid #252d48;
+    border-right: 1px solid #e2e5ec;
     padding: 14px 16px;
     display: flex; flex-direction: column; gap: 4px;
   }
   .phase-badge {
     display: inline-flex; align-items: center;
-    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
-    color: #7aa5f4; font-family: system-ui, sans-serif; gap: 6px;
+    font-size: 20px; letter-spacing: .12em; text-transform: uppercase;
+    color: #2f6fed; font-family: system-ui, sans-serif; gap: 6px;
   }
   .phase-badge::before {
     content: ''; display: inline-block; width: 7px; height: 7px;
-    border-radius: 50%; background: #7aa5f4; box-shadow: 0 0 7px #7aa5f4aa;
+    border-radius: 50%; background: #2f6fed; box-shadow: 0 0 7px #2f6fedaa;
   }
-  .phase-badge.done { color: #26bf6e; }
-  .phase-badge.done::before { background: #26bf6e; box-shadow: 0 0 7px #26bf6eaa; }
+  .phase-badge.done { color: #15a862; }
+  .phase-badge.done::before { background: #15a862; box-shadow: 0 0 7px #15a862aa; }
 
   .status-text {
-    font-size: 14px; color: #7888b0;
-    font-family: system-ui, sans-serif; min-height: 18px;
+    font-size: 20px; color: #667085;
+    font-family: system-ui, sans-serif; min-height: 26px;
   }
 
   .live-meta {
     display: flex; gap: 14px; margin-bottom: 2px;
-    font-size: 12px; color: #9aa8cc;
-    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px; color: #667085;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
   }
   .lm-item { display: flex; align-items: center; gap: 5px; }
   .lm-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .lm-dot.temp { background: #f97316; }
-  .lm-dot.spd  { background: #7aa5f4; }
+  .lm-dot.temp { background: #ea580c; }
+  .lm-dot.spd  { background: #2f6fed; }
 
   /* ── Progress bar ─────────────────────────────────────── */
   .prog-wrap {
     position: relative;
     height: 5px;
-    background: #1a1f35;
+    background: #eceef3;
     border-radius: 3px;
     margin: 6px 0 14px;
     overflow: hidden;
   }
   .prog-bar {
     height: 100%;
-    background: #7aa5f4;
+    background: #2f6fed;
     border-radius: 3px;
     transition: width .4s ease;
   }
-  .prog-bar.done { background: #26bf6e; }
+  .prog-bar.done { background: #15a862; }
 
   @keyframes sweep {
     0%   { transform: translateX(-100%); }
     100% { transform: translateX(100%);  }
   }
   .prog-bar.indeterminate {
-    background: linear-gradient(90deg, #1a2a50 30%, #7aa5f4 50%, #1a2a50 70%);
+    background: linear-gradient(90deg, #dbe6fd 30%, #2f6fed 50%, #dbe6fd 70%);
     background-size: 200% 100%;
     animation: sweep 1.6s ease-in-out infinite;
     width: 100% !important;
@@ -382,12 +382,12 @@
   .prog-pct {
     position: absolute;
     right: 0;
-    top: -20px;
-    font-size: 13px;
-    color: #7aa5f4;
-    font-family: 'Courier New', Courier, monospace;
+    top: -24px;
+    font-size: 20px;
+    color: #2f6fed;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
   }
-  .prog-pct.done { color: #26bf6e; }
+  .prog-pct.done { color: #15a862; }
 
   .force-block {
     display: flex; flex-direction: row; gap: 0; margin: auto 0;
@@ -399,32 +399,32 @@
     padding-left: 12px; flex-shrink: 0;
   }
   .force-label {
-    font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
-    color: #7888b0; font-family: system-ui, sans-serif;
+    font-size: 20px; letter-spacing: .14em; text-transform: uppercase;
+    color: #667085; font-family: system-ui, sans-serif;
   }
   .force-num {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     font-size: 60px; font-weight: 700; line-height: 1;
-    transition: color .3s, text-shadow .3s;
+    transition: color .3s;
   }
   .std-num {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     font-size: 20px; font-weight: 700; line-height: 1;
-    color: #eef2ff;
+    color: #14161d;
   }
   .ref-range {
-    font-size: 13px; color: #7888b0;
-    font-family: 'Courier New', Courier, monospace; margin-top: 4px;
+    font-size: 20px; color: #667085;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; margin-top: 4px;
   }
   .run-actions { margin-top: auto; }
   .abort-btn, .done-btn {
-    width: 100%; height: 54px; font-size: 17px; font-weight: 600;
+    width: 100%; height: 54px; font-size: 20px; font-weight: 600;
     font-family: system-ui, sans-serif; letter-spacing: .08em;
     border-radius: 2px; cursor: pointer; transition: background .12s;
   }
-  .abort-btn { background: #220e0e; border: 1px solid #e5484d; color: #e5484d; }
-  .abort-btn:active { background: #e5484d; color: #fff; }
-  .done-btn  { background: #0b2016; border: 1px solid #26bf6e; color: #26bf6e; }
-  .done-btn:active  { background: #26bf6e; color: #141824; }
+  .abort-btn { background: #fdecec; border: 1px solid #dc2f35; color: #dc2f35; }
+  .abort-btn:active { background: #dc2f35; color: #fff; }
+  .done-btn  { background: #eafaf1; border: 1px solid #15a862; color: #15a862; }
+  .done-btn:active  { background: #15a862; color: #fff; }
   .run-chart { flex: 1; min-width: 0; padding: 6px 6px 6px 2px; }
 </style>

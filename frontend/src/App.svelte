@@ -144,8 +144,8 @@
   :global(html, body) {
     width: 100%; height: 100%;
     overflow: hidden;
-    background: #141824;
-    color: #eef2ff;
+    background: #ffffff;
+    color: #14161d;
     font-family: system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -156,39 +156,39 @@
     width: 100vw; height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: #141824;
+    background-color: #ffffff;
   }
   .content { flex: 1; min-height: 0; overflow: hidden; }
 
   .fw-banner {
     flex-shrink: 0;
-    height: 38px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     padding: 0 14px;
-    background: #2c1010;
-    border-bottom: 1px solid #e5484d;
+    background: #fdecec;
+    border-bottom: 1px solid #dc2f35;
   }
   .fw-msg {
-    font-size: 13px;
-    color: #ff9d9d;
+    font-size: 20px;
+    color: #dc2f35;
     font-family: system-ui, sans-serif;
   }
   .fw-btn {
     flex-shrink: 0;
-    height: 26px;
+    height: 34px;
     padding: 0 14px;
-    background: #e5484d;
+    background: #dc2f35;
     border: none;
     border-radius: 2px;
     color: #fff;
-    font-size: 13px;
+    font-size: 20px;
     font-weight: 600;
     font-family: system-ui, sans-serif;
     letter-spacing: .04em;
   }
-  .fw-btn:active:not(:disabled) { background: #c53a3f; }
+  .fw-btn:active:not(:disabled) { background: #b3261e; }
   .fw-btn:disabled { opacity: .5; cursor: default; }
 </style>

@@ -1,2 +1,2 @@
 __system_name__ = "HEPiC Device"
-__version__ = "0.3.2"
+__version__ = "0.3.3"

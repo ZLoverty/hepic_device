@@ -7,13 +7,14 @@
 # asset (see .github/workflows/build-frontend.yml for how both are produced).
 #
 # Usage:
-#   scripts/fetch_src.sh                    # latest release, extract into ./
+#   scripts/fetch_src.sh                    # latest release, laid over ./
 #   scripts/fetch_src.sh v0.2.0             # specific tag
-#   scripts/fetch_src.sh v0.2.0 /opt/hepic  # extract into a chosen directory
+#   scripts/fetch_src.sh v0.2.0 /opt/hepic  # laid over a chosen directory
 #
-# Extracts to <target>/hepic-device-<tag>/ (the archive's own top-level
-# folder) — this does NOT include backend/static (gitignored, built
-# separately, see fetch_static.sh) or the venv; run install.sh afterward.
+# Extracts the archive (whose own top-level folder is hepic-device-<tag>/)
+# into a scratch dir, then copies its contents directly into <target> —
+# this does NOT include backend/static (gitignored, built separately, see
+# fetch_static.sh) or the venv; run install.sh afterward.
 #
 # For a private repo, export GITHUB_TOKEN with a token that has read access.
 # Override HEPIC_COS_DOMAIN to point at a different bucket/CDN for testing.
@@ -22,10 +23,11 @@ set -euo pipefail
 REPO="ZLoverty/hepic_device"
 TAG="${1:-latest}"
 TARGET_DIR="${2:-.}"
-COS_DOMAIN="${HEPIC_COS_DOMAIN:-https://REPLACE-WITH-YOUR-BUCKET.cos.REPLACE-REGION.myqcloud.com}"
+COS_DOMAIN="https://hepic-device-1456772252.cos.ap-guangzhou.myqcloud.com"
 
 TMP_TAR="$(mktemp)"
-trap 'rm -f "$TMP_TAR"' EXIT
+TMP_EXTRACT="$(mktemp -d)"
+trap 'rm -f "$TMP_TAR"; rm -rf "$TMP_EXTRACT"' EXIT
 
 fetch_from_cos() {
   local tag="$TAG"
@@ -65,8 +67,19 @@ if ! fetch_from_cos; then
   fetch_from_github
 fi
 
-mkdir -p "$TARGET_DIR"
-echo "Extracting into $TARGET_DIR/"
-tar -xzf "$TMP_TAR" -C "$TARGET_DIR"
+tar -xzf "$TMP_TAR" -C "$TMP_EXTRACT"
 
-echo "Done. cd into the extracted hepic-device-*/ directory and run ./install.sh"
+# The archive's own top-level folder name depends on the resolved tag
+# (which may differ from a "latest" TAG), so pick it up rather than
+# assuming hepic-device-$TAG.
+ARCHIVE_ROOT="$(find "$TMP_EXTRACT" -mindepth 1 -maxdepth 1 -type d)"
+if [ -z "$ARCHIVE_ROOT" ] || [ "$(echo "$ARCHIVE_ROOT" | wc -l)" -ne 1 ]; then
+  echo "Unexpected archive layout in $TMP_EXTRACT" >&2
+  exit 1
+fi
+
+mkdir -p "$TARGET_DIR"
+echo "Laying source over $TARGET_DIR/"
+cp -a "$ARCHIVE_ROOT/." "$TARGET_DIR/"
+
+echo "Done. cd into $TARGET_DIR and run ./install.sh"

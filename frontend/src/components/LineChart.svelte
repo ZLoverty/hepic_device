@@ -1,13 +1,13 @@
 <script>
   export let data      = [];        // number[]
-  export let color     = '#f5a623';
+  export let color     = '#d97706';
   export let maxPoints = 200;
   export let title     = '';
   export let unit      = '';
   export let hz        = 10;       // broadcast rate, used for x-axis time labels
 
   const VW = 480, VH = 260;
-  const P  = { l: 46, r: 10, t: 18, b: 22 };
+  const P  = { l: 64, r: 12, t: 20, b: 32 };
   const IW = VW - P.l - P.r;
   const IH = VH - P.t - P.b;
 
@@ -89,66 +89,76 @@
   {#if title}
     <div class="title">{title}{unit ? ` (${unit})` : ''}</div>
   {/if}
-  <svg
-    viewBox="0 0 {VW} {VH}"
-    preserveAspectRatio="none"
-    style="width:100%;height:100%;display:block;flex:1"
-  >
-    <defs>
-      <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color={color} stop-opacity=".25"/>
-        <stop offset="100%" stop-color={color} stop-opacity="0"/>
-      </linearGradient>
-    </defs>
+  <div class="plot">
+    <!-- Shapes only: preserveAspectRatio="none" lets these stretch freely
+         to fill the container, but that same non-uniform scale would
+         warp <text> glyphs as the window resizes, so labels are rendered
+         as a separate HTML overlay below instead. -->
+    <svg
+      viewBox="0 0 {VW} {VH}"
+      preserveAspectRatio="none"
+      style="width:100%;height:100%;display:block"
+    >
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color={color} stop-opacity=".25"/>
+          <stop offset="100%" stop-color={color} stop-opacity="0"/>
+        </linearGradient>
+      </defs>
 
-    <!-- horizontal grid lines + y-axis labels -->
-    {#each ticks as v}
-      {@const y = ty(v, range)}
-      <line x1={P.l} y1={y} x2={VW - P.r} y2={y}
-            stroke="#2d3655" stroke-width="1" stroke-dasharray="3 5"/>
-      <text x={P.l - 4} y={y + 4} text-anchor="end"
-            fill="#6a7590" font-size="14" font-family="monospace">{v}</text>
-    {/each}
+      <!-- horizontal grid lines -->
+      {#each ticks as v}
+        {@const y = ty(v, range)}
+        <line x1={P.l} y1={y} x2={VW - P.r} y2={y}
+              stroke="#e2e5ec" stroke-width="1" stroke-dasharray="3 5"/>
+      {/each}
 
-    <!-- y-axis rule -->
-    <line x1={P.l} y1={P.t} x2={P.l} y2={P.t + IH}
-          stroke="#2d3655" stroke-width="1"/>
+      <!-- y-axis rule -->
+      <line x1={P.l} y1={P.t} x2={P.l} y2={P.t + IH}
+            stroke="#e2e5ec" stroke-width="1"/>
 
-    <!-- x-axis rule -->
-    <line x1={P.l} y1={P.t + IH} x2={VW - P.r} y2={P.t + IH}
-          stroke="#2d3655" stroke-width="1"/>
+      <!-- x-axis rule -->
+      <line x1={P.l} y1={P.t + IH} x2={VW - P.r} y2={P.t + IH}
+            stroke="#e2e5ec" stroke-width="1"/>
 
-    <!-- x-axis time labels -->
-    {#each xTicks as { x, label }}
-      <line x1={x} y1={P.t + IH} x2={x} y2={P.t + IH + 4}
-            stroke="#2d3655" stroke-width="1"/>
-      <text x={x} y={VH - 2} text-anchor="middle"
-            fill="#6a7590" font-size="13" font-family="monospace">{label}</text>
-    {/each}
+      <!-- x-axis tick marks -->
+      {#each xTicks as { x }}
+        <line x1={x} y1={P.t + IH} x2={x} y2={P.t + IH + 4}
+              stroke="#e2e5ec" stroke-width="1"/>
+      {/each}
 
-    <!-- filled area -->
-    {#if areaPath}
-      <path d={areaPath} fill="url(#{gid})"/>
-    {/if}
+      <!-- filled area -->
+      {#if areaPath}
+        <path d={areaPath} fill="url(#{gid})"/>
+      {/if}
 
-    <!-- main line -->
-    {#if linePath}
-      <path d={linePath} fill="none" stroke={color} stroke-width="2.5"
-            stroke-linejoin="round" stroke-linecap="round"/>
-    {/if}
+      <!-- main line -->
+      {#if linePath}
+        <path d={linePath} fill="none" stroke={color} stroke-width="2.5"
+              stroke-linejoin="round" stroke-linecap="round"/>
+      {/if}
 
-    <!-- live dot -->
-    {#if lastX !== null && lastY !== null}
-      <circle cx={lastX} cy={lastY} r="8" fill={color} opacity=".2"/>
-      <circle cx={lastX} cy={lastY} r="3.5" fill={color}/>
-    {/if}
+      <!-- live dot -->
+      {#if lastX !== null && lastY !== null}
+        <circle cx={lastX} cy={lastY} r="8" fill={color} opacity=".2"/>
+        <circle cx={lastX} cy={lastY} r="3.5" fill={color}/>
+      {/if}
+    </svg>
 
-    <!-- empty state -->
-    {#if pts.length < 2}
-      <text x={VW/2} y={VH/2} text-anchor="middle" dominant-baseline="middle"
-            fill="#3a4570" font-size="14" font-family="monospace">等待数据...</text>
-    {/if}
-  </svg>
+    <!-- text labels, positioned by percentage so they scale with the box
+         without stretching the glyphs themselves -->
+    <div class="labels">
+      {#each ticks as v}
+        <span class="y-label" style="top:{ty(v, range) / VH * 100}%; left:{(P.l - 8) / VW * 100}%">{v}</span>
+      {/each}
+      {#each xTicks as { x, label }}
+        <span class="x-label" style="left:{x / VW * 100}%; top:{(VH - 4) / VH * 100}%">{label}</span>
+      {/each}
+      {#if pts.length < 2}
+        <span class="empty-label">等待数据...</span>
+      {/if}
+    </div>
+  </div>
 </div>
 
 <style>
@@ -160,13 +170,41 @@
     min-height: 0;
   }
   .title {
-    font-size: 13px;
+    font-size: 20px;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: #6a7590;
+    color: #667085;
     padding: 6px 8px 0;
     font-family: system-ui, sans-serif;
     flex-shrink: 0;
   }
-  svg { flex: 1; min-height: 0; }
+  .plot {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+  .labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .y-label, .x-label, .empty-label {
+    position: absolute;
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
+    color: #667085;
+    white-space: nowrap;
+  }
+  .y-label {
+    transform: translate(-100%, -50%);
+  }
+  .x-label {
+    transform: translate(-50%, -100%);
+  }
+  .empty-label {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #9ca3af;
+  }
 </style>
