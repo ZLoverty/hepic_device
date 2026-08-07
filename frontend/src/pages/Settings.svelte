@@ -171,7 +171,7 @@
   .layout {
     height: 100%;
     padding: 18px 24px;
-    color: #dce4f5;
+    color: #14161d;
     font-family: system-ui, sans-serif;
     display: flex;
     flex-direction: column;
@@ -179,79 +179,80 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+  .layout > * { flex-shrink: 0; }
   .section {
-    font-size: 10px;
+    font-size: 20px;
     letter-spacing: .16em;
     text-transform: uppercase;
-    color: #5a6380;
+    color: #667085;
     margin-bottom: 4px;
   }
   .row {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #131623;
-    border: 1px solid #1e2235;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
     padding: 0 16px;
-    height: 56px;
+    height: 60px;
     border-radius: 2px;
   }
   .dot {
     width: 9px; height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: #3d4560;
+    background: #98a2b3;
     transition: background .4s;
   }
-  .dot.green { background: #26bf6e; box-shadow: 0 0 8px #26bf6e88; }
-  .dot.red   { background: #e5484d; }
-  .dot.amber { background: #f5a623; box-shadow: 0 0 8px #f5a62388; }
-  .name { flex: 1; font-size: 14px; }
-  .val  { font-size: 13px; font-family: 'Courier New', Courier, monospace; }
-  .ok   { color: #26bf6e; }
-  .bad  { color: #e5484d; }
-  .muted{ color: #5a6380; }
+  .dot.green { background: #15a862; box-shadow: 0 0 8px #15a86288; }
+  .dot.red   { background: #dc2f35; }
+  .dot.amber { background: #d97706; box-shadow: 0 0 8px #d9770688; }
+  .name { flex: 1; font-size: 20px; }
+  .val  { font-size: 20px; font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; }
+  .ok   { color: #15a862; }
+  .bad  { color: #dc2f35; }
+  .muted{ color: #667085; }
   .refresh {
-    background: #1e2235;
-    border: 1px solid #2e3352;
-    color: #dce4f5;
-    font-size: 13px;
-    padding: 4px 12px;
+    background: #f5f6f9;
+    border: 1px solid #d0d5e0;
+    color: #14161d;
+    font-size: 20px;
+    padding: 6px 14px;
     border-radius: 2px;
     cursor: pointer;
-    height: 32px;
+    height: 40px;
   }
-  .refresh:active { background: #2e3352; }
+  .refresh:active { background: #eceef3; }
   .refresh:disabled { opacity: .5; cursor: default; }
 
   .update-box {
-    background: #131623;
-    border: 1px solid #1e2235;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
     padding: 14px 16px;
     border-radius: 2px;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .update-msg { font-size: 13px; }
+  .update-msg { font-size: 20px; }
   .update-log {
     margin: 0;
     max-height: 160px;
     overflow-y: auto;
-    background: #0d0f18;
-    border: 1px solid #1a1e30;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
     border-radius: 2px;
     padding: 8px 10px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
-    color: #8a92b2;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    color: #667085;
     white-space: pre-wrap;
     word-break: break-all;
   }
 
   .info {
-    background: #131623;
-    border: 1px solid #1e2235;
+    background: #f5f6f9;
+    border: 1px solid #e2e5ec;
     padding: 4px 16px;
     border-radius: 2px;
   }
@@ -259,14 +260,14 @@
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid #1a1e30;
-    font-size: 14px;
-    color: #5a6380;
+    border-bottom: 1px solid #e2e5ec;
+    font-size: 20px;
+    color: #667085;
   }
   .info-row:last-child { border-bottom: none; }
-  .mono { color: #dce4f5; font-family: 'Courier New', Courier, monospace; }
+  .mono { color: #14161d; font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; }
 
-  .info-group { border-bottom: 1px solid #1a1e30; padding-bottom: 8px; }
+  .info-group { border-bottom: 1px solid #e2e5ec; padding-bottom: 8px; }
   .info-group .info-row { border-bottom: none; padding-bottom: 4px; }
   .info-group:last-child { border-bottom: none; }
   .info-group .update-msg { padding-bottom: 6px; }

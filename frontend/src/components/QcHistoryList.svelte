@@ -57,25 +57,25 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: #1a1f35;
+    background: #f5f6f9;
   }
   .hist-title {
     flex-shrink: 0;
     padding: 10px 18px 8px;
-    font-size: 13px;
+    font-size: 20px;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: #7888b0;
+    color: #667085;
     font-family: system-ui, sans-serif;
-    border-bottom: 1px solid #2e3a58;
+    border-bottom: 1px solid #e2e5ec;
   }
   .empty {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3a4570;
-    font-size: 14px;
+    color: #9ca3af;
+    font-size: 20px;
     font-family: system-ui, sans-serif;
   }
   .rows {
@@ -86,27 +86,27 @@
   .date-header {
     position: sticky;
     top: 0;
-    padding: 6px 18px;
-    background: #141a30;
-    color: #7aa5f4;
-    font-size: 12px;
+    padding: 8px 18px;
+    background: #eceef3;
+    color: #2f6fed;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: .04em;
-    font-family: 'Courier New', Courier, monospace;
-    border-bottom: 1px solid #2e3a58;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid #e2e5ec;
   }
   .row {
     display: grid;
-    grid-template-columns: 44px 1fr auto;
+    grid-template-columns: 64px 1fr auto;
     align-items: baseline;
     gap: 10px;
-    padding: 9px 18px;
-    border-bottom: 1px solid #232a48;
-    font-family: 'Courier New', Courier, monospace;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e2e5ec;
+    font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
   .row:last-child { border-bottom: none; }
-  .time  { color: #5a6888; font-size: 13px; flex-shrink: 0; }
-  .force { color: #eef2ff; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .code  { color: #7aa5f4; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .time  { color: #667085; font-size: 20px; flex-shrink: 0; }
+  .force { color: #14161d; font-size: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .code  { color: #2f6fed; font-size: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 </style>

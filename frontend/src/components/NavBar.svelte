@@ -55,13 +55,13 @@
 </nav>
 
 <style>
-  :root { --bg-nav: #0f1220; }
+  :root { --bg-nav: #ffffff; }
 
   nav {
-    height: 64px;
+    height: 72px;
     flex-shrink: 0;
-    background: #0f1220;
-    border-top: 1px solid #252d48;
+    background: #ffffff;
+    border-top: 1px solid #e2e5ec;
     display: flex;
     position: relative;
   }
@@ -72,7 +72,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    color: #5a6888;
+    color: #667085;
     background: none;
     border: none;
     border-top: 2px solid transparent;
@@ -81,7 +81,7 @@
     padding: 0;
   }
   .tab:active  { opacity: .65; }
-  .tab.active  { color: #7aa5f4; border-top-color: #7aa5f4; }
+  .tab.active  { color: #2f6fed; border-top-color: #2f6fed; }
   .icon {
     width: 22px;
     height: 22px;
@@ -91,7 +91,7 @@
   }
   .icon svg { width: 100%; height: 100%; }
   .label {
-    font-size: 14px;
+    font-size: 20px;
     font-family: system-ui, sans-serif;
     letter-spacing: .02em;
   }
@@ -102,11 +102,11 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #e5484d;
+    background: #dc2f35;
     transition: background .4s;
   }
   .ws-dot.on {
-    background: #26bf6e;
-    box-shadow: 0 0 7px #26bf6eaa;
+    background: #15a862;
+    box-shadow: 0 0 7px #15a862aa;
   }
 </style>
