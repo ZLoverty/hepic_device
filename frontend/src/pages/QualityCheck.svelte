@@ -279,7 +279,10 @@
     font-size: 20px; letter-spacing: .12em; text-transform: uppercase;
     color: #667085; font-family: system-ui, sans-serif;
   }
-  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-grid {
+    display: flex; flex: 1; flex-wrap: wrap; gap: 8px;
+    min-height: 0; overflow-y: auto; align-content: flex-start;
+  }
   .chip {
     height: 52px; min-width: 84px; padding: 0 14px;
     background: #f5f6f9; border: 1px solid #e2e5ec;
