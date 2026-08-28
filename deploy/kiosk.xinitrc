@@ -4,8 +4,8 @@
 set -e
 
 xset s off
-xset -dpms
-xset s noblank
+xset +dpms 
+xset dpms 0 0 300
 
 unclutter -idle 0.5 -root &
 
