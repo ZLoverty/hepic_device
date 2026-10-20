@@ -22,6 +22,10 @@ class GcodeRequest(BaseModel):
     script: str
 
 
+class ManualJogRequest(BaseModel):
+    direction: int
+
+
 @router.get("/status")
 async def get_status(request: Request):
     k = _state(request).klipper
@@ -43,6 +47,18 @@ async def set_temperature(body: TemperatureRequest, request: Request):
 @router.post("/gcode")
 async def send_gcode(body: GcodeRequest, request: Request):
     await _state(request).klipper.send_gcode(body.script)
+    return {"ok": True}
+
+
+@router.post("/manual_jog/start")
+async def start_manual_jog(body: ManualJogRequest, request: Request):
+    await _state(request).klipper.start_manual_jog(body.direction)
+    return {"ok": True}
+
+
+@router.post("/manual_jog/stop")
+async def stop_manual_jog(request: Request):
+    await _state(request).klipper.stop_manual_jog()
     return {"ok": True}
 
 

@@ -51,6 +51,7 @@ class MockKlipperWorker:
         self.progress: float = 0.0
         self.klippy_state: str = "ready"
         self._running = False
+        self._manual_jog_task: asyncio.Task | None = None
 
     async def run(self):
         self._running = True
@@ -68,9 +69,40 @@ class MockKlipperWorker:
 
     def stop(self):
         self._running = False
+        if self._manual_jog_task is not None:
+            self._manual_jog_task.cancel()
+            self._manual_jog_task = None
 
     async def send_gcode(self, gcode: str):
         logger.info("[MOCK] G-code: %s", gcode)
+
+    async def start_manual_jog(self, direction: int):
+        if direction not in (-1, 1):
+            raise ValueError("manual jog direction must be 1 or -1")
+        await self.stop_manual_jog()
+        await self.send_gcode(self._manual_jog_gcode(direction))
+        self._manual_jog_task = asyncio.create_task(
+            self._manual_jog_loop(direction), name="mock-manual-jog"
+        )
+
+    async def stop_manual_jog(self):
+        task = self._manual_jog_task
+        self._manual_jog_task = None
+        if task is not None:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
+    async def _manual_jog_loop(self, direction: int):
+        while True:
+            await asyncio.sleep(5 / 3)
+            await self.send_gcode(self._manual_jog_gcode(direction))
+
+    @staticmethod
+    def _manual_jog_gcode(direction: int) -> str:
+        return f"M83\nG1 E{direction * 5} F180\nM82"
 
     async def set_temperature(self, temperature: float):
         logger.info("[MOCK] Set temperature: %s °C", temperature)

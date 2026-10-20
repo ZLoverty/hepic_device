@@ -19,14 +19,6 @@
   // duplicating restart logic locally.
   $: stopped = $sensorData.klippy_state === 'shutdown' || $sensorData.klippy_state === 'error';
 
-  // Fixed extrusion speed: 3 mm/s, 5 mm per batch ≈ 1.67 s per batch.
-  // Interval is 100 ms shorter than execution time so batches chain without gaps.
-  const SPEED_MMS = 3;
-  const BATCH_MM  = 5;
-  const BATCH_MS  = Math.floor(BATCH_MM / SPEED_MMS * 1000) - 100; // 1567 ms
-
-  let holdTimer = null;
-
   // ── Numpad state ──────────────────────────────────────────────────
   let numpadOpen  = false;
   let numpadInput = '';
@@ -61,20 +53,19 @@
   }
 
   // ── Long-press extrude / retract ──────────────────────────────────
+  let jogStartPromise = null;
+
   function startHold(dir) {
     if (stopped) return;
-    const f    = (SPEED_MMS * 60).toFixed(0);
-    const send = () =>
-      api.klipper.gcode(`M83\nG1 E${dir * BATCH_MM} F${f}\nM82`).catch(console.error);
-    send();
-    holdTimer = setInterval(send, BATCH_MS);
+    jogStartPromise = api.klipper.startManualJog(dir).catch(console.error);
   }
 
-  function endHold() {
-    if (holdTimer !== null) {
-      clearInterval(holdTimer);
-      holdTimer = null;
-    }
+  async function endHold() {
+    const start = jogStartPromise;
+    jogStartPromise = null;
+    // Wait for start before stop so a quick tap cannot reorder the two requests.
+    if (start) await start;
+    api.klipper.stopManualJog().catch(console.error);
   }
 
   // ── Emergency stop (armed with a confirm step to guard against mis-taps,
