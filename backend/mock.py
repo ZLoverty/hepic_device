@@ -52,6 +52,8 @@ class MockKlipperWorker:
         self.klippy_state: str = "ready"
         self._running = False
         self._manual_jog_task: asyncio.Task | None = None
+        self._manual_jog_busy_until = 0.0
+        self._manual_jog_lock = asyncio.Lock()
 
     async def run(self):
         self._running = True
@@ -79,15 +81,23 @@ class MockKlipperWorker:
     async def start_manual_jog(self, direction: int):
         if direction not in (-1, 1):
             raise ValueError("manual jog direction must be 1 or -1")
-        await self.stop_manual_jog()
-        await self.send_gcode(self._manual_jog_gcode(direction))
-        self._manual_jog_task = asyncio.create_task(
-            self._manual_jog_loop(direction), name="mock-manual-jog"
-        )
+        async with self._manual_jog_lock:
+            if (
+                self._manual_jog_task is not None
+                or time.monotonic() < self._manual_jog_busy_until
+            ):
+                return False
+            await self.send_gcode(self._manual_jog_gcode(direction))
+            self._manual_jog_busy_until = time.monotonic() + 5 / 3
+            self._manual_jog_task = asyncio.create_task(
+                self._manual_jog_loop(direction), name="mock-manual-jog"
+            )
+            return True
 
     async def stop_manual_jog(self):
-        task = self._manual_jog_task
-        self._manual_jog_task = None
+        async with self._manual_jog_lock:
+            task = self._manual_jog_task
+            self._manual_jog_task = None
         if task is not None:
             task.cancel()
             try:
@@ -99,6 +109,7 @@ class MockKlipperWorker:
         while True:
             await asyncio.sleep(5 / 3)
             await self.send_gcode(self._manual_jog_gcode(direction))
+            self._manual_jog_busy_until = time.monotonic() + 5 / 3
 
     @staticmethod
     def _manual_jog_gcode(direction: int) -> str:

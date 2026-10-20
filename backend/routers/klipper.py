@@ -52,8 +52,8 @@ async def send_gcode(body: GcodeRequest, request: Request):
 
 @router.post("/manual_jog/start")
 async def start_manual_jog(body: ManualJogRequest, request: Request):
-    await _state(request).klipper.start_manual_jog(body.direction)
-    return {"ok": True}
+    accepted = await _state(request).klipper.start_manual_jog(body.direction)
+    return {"ok": True, "accepted": accepted}
 
 
 @router.post("/manual_jog/stop")
