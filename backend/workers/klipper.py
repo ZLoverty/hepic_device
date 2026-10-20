@@ -4,12 +4,17 @@ import asyncio
 import json
 import logging
 import math
+import time
 
 import websockets
 
 logger = logging.getLogger(__name__)
 
 _nan = math.nan
+
+_MANUAL_JOG_SPEED_MMS = 3
+_MANUAL_JOG_BATCH_MM = 1
+_MANUAL_JOG_INTERVAL_S = _MANUAL_JOG_BATCH_MM / _MANUAL_JOG_SPEED_MMS
 
 
 class DeviceKlipperWorker:
@@ -33,6 +38,9 @@ class DeviceKlipperWorker:
         self._send_queue: asyncio.Queue = asyncio.Queue(maxsize=64)
         self._response_queues: list[asyncio.Queue] = []
         self._id = 0
+        self._manual_jog_task: asyncio.Task | None = None
+        self._manual_jog_busy_until = 0.0
+        self._manual_jog_lock = asyncio.Lock()
 
     # ------------------------------------------------------------------
     # Public control API
@@ -72,6 +80,48 @@ class DeviceKlipperWorker:
         await self.emergency_stop()
         await self.restart_firmware()
 
+    async def start_manual_jog(self, direction: int):
+        """Start one cancellable long-press extrusion/retraction loop."""
+        if direction not in (-1, 1):
+            raise ValueError("manual jog direction must be 1 or -1")
+        async with self._manual_jog_lock:
+            # Do not enqueue another move while the previous one is still
+            # expected to be running. This is what prevents rapid mouse taps
+            # from accumulating motion in Klipper's queue.
+            if (
+                self._manual_jog_task is not None
+                or time.monotonic() < self._manual_jog_busy_until
+            ):
+                return False
+            await self.send_gcode(self._manual_jog_gcode(direction))
+            self._manual_jog_busy_until = time.monotonic() + _MANUAL_JOG_INTERVAL_S
+            self._manual_jog_task = asyncio.create_task(
+                self._manual_jog_loop(direction), name="manual-jog"
+            )
+            return True
+
+    async def stop_manual_jog(self):
+        async with self._manual_jog_lock:
+            task = self._manual_jog_task
+            self._manual_jog_task = None
+        if task is not None:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
+    async def _manual_jog_loop(self, direction: int):
+        while True:
+            await asyncio.sleep(_MANUAL_JOG_INTERVAL_S)
+            await self.send_gcode(self._manual_jog_gcode(direction))
+            self._manual_jog_busy_until = time.monotonic() + _MANUAL_JOG_INTERVAL_S
+
+    @staticmethod
+    def _manual_jog_gcode(direction: int) -> str:
+        feedrate = _MANUAL_JOG_SPEED_MMS * 60
+        return f"M83\nG1 E{direction * _MANUAL_JOG_BATCH_MM} F{feedrate}\nM82"
+
     def subscribe_responses(self) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(maxsize=100)
         self._response_queues.append(q)
@@ -85,6 +135,9 @@ class DeviceKlipperWorker:
 
     def stop(self):
         self._running = False
+        if self._manual_jog_task is not None:
+            self._manual_jog_task.cancel()
+            self._manual_jog_task = None
 
     # ------------------------------------------------------------------
     # Internal
